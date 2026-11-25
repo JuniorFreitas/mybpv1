@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreAreaEtiquetaRequest;
+use App\Http\Requests\Cadastros\UpdateAreaEtiquetaRequest;
 use App\Models\AreaEtiqueta;
 use App\Models\Vaga;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AreaEtiquetasController extends Controller
 {
@@ -26,27 +27,9 @@ class AreaEtiquetasController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreAreaEtiquetaRequest $request)
     {
-        $this->authorize('cadastro_areaetiqueta');
-        $dados = $request->input();
-
-        $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        });
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra],
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Área',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -89,28 +72,12 @@ class AreaEtiquetasController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateAreaEtiquetaRequest $request, $id)
     {
-        $this->authorize('cadastro_areaetiqueta');
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $area = AreaEtiqueta::find($id);
 
-        $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        })->ignore($area->id);
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra],
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Área',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
         try {
             DB::beginTransaction();
 

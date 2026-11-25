@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\AvaliarUpdateAvaliacaoRequest;
+use App\Http\Requests\Avaliacao\SalvaAvaliacaoFinalRequest;
+use App\Http\Requests\Avaliacao\StoreAvaliacaoRequest;
+use App\Http\Requests\Avaliacao\UpdateAvaliacaoRequest;
 use App\Jobs\JobExportaAvaliacoesCsv;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoAvaliadoresTipos;
@@ -13,7 +17,6 @@ use App\Models\AvaliacaoTopico;
 use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
 use App\Models\User;
-use App\Rules\TenantUniqueRules;
 use App\Services\Avaliacoes\AvaliacaoNotificacaoService;
 use App\Support\AvaliacaoDesempenhoPdfViewData;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -79,49 +82,11 @@ class AvaliacaoController extends Controller
         return view('g.cadastros.avaliacoes-pj.avaliacao.index');
     }
 
-    public function store(Request $request)
+    public function store(StoreAvaliacaoRequest $request)
     {
         $this->authorize('cadastro_avaliacao_insert');
         $dados = $request->input();
         $dados['mostrar_notas_avaliador_final'] = (bool)($dados['mostrar_notas_avaliador_final'] ?? false);
-        $titulo = $dados['titulo'];
-
-        $arrayValidacao = [
-            'titulo' => [
-                function ($attribute, $value, $fail) use ($dados) {
-                    if (strlen($value) <= 3) {
-                        $fail('Informe uma título maior que 3 caracteres.');
-                    }
-                },
-                'required',
-                new TenantUniqueRules('avaliacoes', $request->segment(5))
-            ],
-            'avaliacao_tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
-                $avaliacao_tipo_id = $dados['avaliacao_tipo_id'];
-                $avaliacaotipo = AvaliacaoTipo::whereId($avaliacao_tipo_id)->first();
-                if (!$avaliacaotipo) {
-                    $fail('Verificar o tipo de avaliação');
-                }
-            }],
-            'data_inicio_prazo' => [function ($attribute, $value, $fail) use ($dados) {
-                $datainicio = $dados['data_inicio_prazo'];
-                $dataencerramento = $dados['data_fim_prazo'];
-
-                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
-
-                if ($diff_dias < 0) {
-                    $fail('Data Fim precisa ser maior que a Data início');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar a avaliação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -151,48 +116,11 @@ class AvaliacaoController extends Controller
 
     }
 
-    public function update(Request $request, Avaliacao $avaliacao)
+    public function update(UpdateAvaliacaoRequest $request, Avaliacao $avaliacao)
     {
         $this->authorize('cadastro_avaliacao_update');
         $dados = $request->input();
         $dados['mostrar_notas_avaliador_final'] = (bool)($dados['mostrar_notas_avaliador_final'] ?? false);
-
-        $arrayValidacao = [
-            'titulo' => [
-                function ($attribute, $value, $fail) use ($dados) {
-                    if (strlen($value) <= 3) {
-                        $fail('Informe uma título maior que 3 caracteres.');
-                    }
-                },
-                'required',
-                new TenantUniqueRules('avaliacoes', $request->segment(5))
-            ],
-            'avaliacao_tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
-                $avaliacao_tipo_id = $dados['avaliacao_tipo_id'];
-                $avaliacaotipo = AvaliacaoTipo::whereId($avaliacao_tipo_id)->first();
-                if (!$avaliacaotipo) {
-                    $fail('Verificar o tipo de avaliação');
-                }
-            }],
-            'data_inicio_prazo' => [function ($attribute, $value, $fail) use ($dados) {
-                $datainicio = $dados['data_inicio_prazo'];
-                $dataencerramento = $dados['data_fim_prazo'];
-
-                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
-
-                if ($diff_dias < 0) {
-                    $fail('Data Fim precisa ser maior que a Data início');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao editar a avaliação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -797,7 +725,7 @@ class AvaliacaoController extends Controller
         ]);
     }
 
-    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
+    public function avaliarUpdate(AvaliarUpdateAvaliacaoRequest $request, AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
     {
         $this->authorize('avaliacoes_avaliar');
 
@@ -810,17 +738,6 @@ class AvaliacaoController extends Controller
         $dados = $request->input();
 
         $respostas = collect($dados['respostas'])->collapse()->all();
-
-        $dadosValidados = \Validator::make($respostas, [
-            '*.nota' => 'required|numeric|min:1|max:5',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Verifique as respostas, existe pergunta sem nota',
-            ], 400);
-
-        }
 
         try {
             DB::beginTransaction();
@@ -1086,30 +1003,10 @@ class AvaliacaoController extends Controller
         return $pdf->download($nomeArquivo);
     }
 
-    public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
+    public function salvaAvaliacao(SalvaAvaliacaoFinalRequest $request, AvaliacaoFeedback $avaliacaoFeedback)
     {
         $this->authorize('avaliacoes_final');
         $dados = $request->input();
-
-        if (!isset($dados['planos_acoes'])) {
-            return response()->json([
-                'msg' => 'ERRO: É necessário inserir um plano de ação',
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados['planos_acoes'], [
-            'topico_id.*' => 'required',
-            'plano_de_acao.*' => 'required',
-            'responsavel.*' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar a avaliação final',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
 
         try {
             DB::beginTransaction();

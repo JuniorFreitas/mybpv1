@@ -8,6 +8,7 @@ use App\Models\ClienteFilial;
 use App\Models\Exportacao;
 use App\Models\User;
 use App\Services\Cih\CihLotacaoResolver;
+use App\Support\ExportDateBr;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -311,39 +312,15 @@ class JobExportaCihCsvFinal implements ShouldQueue
             return $text;
         };
 
-        // Formata apenas a data no padrão brasileiro (dd/mm/aaaa)
-        $formatDateBrOnly = function ($date) {
-            if (empty($date)) {
-                return '';
-            }
-
-            if ($date instanceof \DateTimeInterface) {
-                return $date->format('d/m/Y');
-            }
-
-            $dateString = trim((string) $date);
-            if ($dateString === '') {
-                return '';
-            }
-
-            if (preg_match('/(\d{4})-(\d{2})-(\d{2})/', $dateString, $matches)) {
-                return $matches[3] . '/' . $matches[2] . '/' . $matches[1];
-            }
-
-            if (preg_match('/(\d{2})\/(\d{2})\/(\d{4})/', $dateString, $matches)) {
-                return $matches[1] . '/' . $matches[2] . '/' . $matches[3];
-            }
-
-            try {
-                return \Carbon\Carbon::parse($dateString)->format('d/m/Y');
-            } catch (\Exception $e) {
-                return '';
-            }
-        };
-
         $cargo = $colaborador->Admissao->cargo
             ?? $colaborador->VagaAberta->Vaga->nome
             ?? '';
+
+        // Accessors do Cih usam dataHoraCompleta(); exportação de data = só dd/mm/aaaa
+        $dataOcorrencia = ExportDateBr::only($cih->data_lancamento ?? '');
+        $dataCriacao = ExportDateBr::only($cih->data_criacao ?? '');
+        $dataAprovacao = ExportDateBr::only($cih->data_aprovacao ?? '');
+        $dataAprovacaoRh = ExportDateBr::only($cih->data_aprovacao_rh ?? '');
 
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
             $row = [
@@ -358,16 +335,16 @@ class JobExportaCihCsvFinal implements ShouldQueue
             }
 
             return array_merge($row, [
-                $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
+                $cleanText($dataOcorrencia),
                 $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
                 $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
-                $cleanText($cih->data_criacao ?? ''),
+                $cleanText($dataCriacao),
                 $cleanText($cih->acao ?? ''),
                 $cleanText($cih->status ?? "aguardando"),
-                $cleanText($cih->data_aprovacao ?? ''),
+                $cleanText($dataAprovacao),
                 $cleanText($cih->ResponsavelAprovacao ? $cih->ResponsavelAprovacao->nome : ''),
                 $cleanText($cih->resposta_rh ?? ""),
-                $cleanText($cih->data_aprovacao_rh ?? ''),
+                $cleanText($dataAprovacaoRh),
                 $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
             ]);
         }
@@ -385,16 +362,16 @@ class JobExportaCihCsvFinal implements ShouldQueue
         }
 
         return array_merge($row, [
-            $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
+            $cleanText($dataOcorrencia),
             $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
             $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
-            $cleanText($cih->data_criacao ?? ''),
+            $cleanText($dataCriacao),
             $cleanText($cih->acao ?? ''),
             $cleanText($cih->status ?? "aguardando"),
-            $cleanText($cih->data_aprovacao ?? ''),
+            $cleanText($dataAprovacao),
             $cleanText($cih->ResponsavelAprovacao ? $cih->ResponsavelAprovacao->nome : ''),
             $cleanText($cih->resposta_rh ?? ""),
-            $cleanText($cih->data_aprovacao_rh ?? ''),
+            $cleanText($dataAprovacaoRh),
             $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
         ]);
     }

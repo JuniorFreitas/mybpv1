@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreCentroCustoRequest;
+use App\Http\Requests\Cadastros\UpdateCentroCustoRequest;
 use App\Models\CentroCusto;
 use App\Models\CentroCustoFilial;
 use App\Models\CentroCustoGestor;
@@ -47,46 +49,27 @@ class CentroCustoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCentroCustoRequest $request)
     {
-        $this->authorize('cadastro_centrocusto_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true';
+        $dados = $request->all();
 
-        $regras = ['label' => ['required', $this->unicidadeService->regraLabel($dados)]];
-        if ((new ClienteFilial())->temFilial()) {
-            $regras['campoCnpj'] = ['required', 'string'];
-        }
+        try {
+            DB::beginTransaction();
+            $centro = CentroCusto::create($dados);
+            $this->gestorSyncService->sincronizar(
+                $centro,
+                $dados['gestor_id'] ?? null,
+                $dados['gestor_substituto_id'] ?? null
+            );
+            $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
+            DB::commit();
+            return response()->json([], 201);
 
-        $dadosValidados = \Validator::make($dados, $regras, [
-            'label.unique' => 'Já existe um Centro de Custo ativo com este Nome no mesmo CNPJ.',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'msg' => 'Erro ao atualizar Centro de Custos',
-                'erros' => $dadosValidados->errors()
+                'msg' => $e->getMessage(),
             ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-                $centro = CentroCusto::create($dados);
-                $this->gestorSyncService->sincronizar(
-                    $centro,
-                    $dados['gestor_id'] ?? null,
-                    $dados['gestor_substituto_id'] ?? null
-                );
-                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
         }
     }
 
@@ -152,47 +135,28 @@ class CentroCustoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCentroCustoRequest $request, $id)
     {
-        $this->authorize('cadastro_centrocusto_update');
-        $dados = $request->input();
+        $dados = $request->all();
         $centro = CentroCusto::find($id);
-        $dados['ativo'] = $dados['ativo'] == 'true';
 
-        $regras = ['label' => ['required', $this->unicidadeService->regraLabel($dados, $centro->id)]];
-        if ((new ClienteFilial())->temFilial()) {
-            $regras['campoCnpj'] = ['required', 'string'];
-        }
+        try {
+            DB::beginTransaction();
+            $centro->update($dados);
+            $this->gestorSyncService->sincronizar(
+                $centro,
+                $dados['gestor_id'] ?? null,
+                $dados['gestor_substituto_id'] ?? null
+            );
+            $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
+            DB::commit();
+            return response()->json([], 201);
 
-        $dadosValidados = \Validator::make($dados, $regras, [
-            'label.unique' => 'Já existe um Centro de Custo ativo com este Nome no mesmo CNPJ.',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'msg' => 'Erro ao atualizar Centro de Custos',
-                'erros' => $dadosValidados->errors()
+                'msg' => $e->getMessage(),
             ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-                $centro->update($dados);
-                $this->gestorSyncService->sincronizar(
-                    $centro,
-                    $dados['gestor_id'] ?? null,
-                    $dados['gestor_substituto_id'] ?? null
-                );
-                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
         }
     }
 

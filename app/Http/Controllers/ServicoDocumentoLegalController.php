@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreServicoDocumentoLegalRequest;
+use App\Http\Requests\Documentos\UpdateServicoDocumentoLegalRequest;
 use App\Models\Servico;
 use App\Models\User;
-use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ServicoDocumentoLegalController extends Controller
 {
@@ -17,25 +17,10 @@ class ServicoDocumentoLegalController extends Controller
 
     }
 
-    public function store(Request $request)
+    public function store(StoreServicoDocumentoLegalRequest $request)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $arrayValidacao = [
-            'titulo' => [
-                'required',
-                'min:3',
-                new TenantUniqueRules('servicos', $request->segment(5)),
-            ],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Serviço',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -63,27 +48,10 @@ class ServicoDocumentoLegalController extends Controller
         return $tiposervico;
     }
 
-    public function update(Request $request, Servico $tiposervico)
+    public function update(UpdateServicoDocumentoLegalRequest $request, Servico $tiposervico)
     {
-        $dados = $request->input();
-
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $arrayValidacao = [
-            'titulo' => [
-                'required',
-                'min:3',
-                new TenantUniqueRules('servicos', $request->segment(5)),
-            ],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Serviço',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();

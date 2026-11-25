@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PromocaoFeedback\StorePromocaoFeedbackRequest;
 use App\Models\PromocaoFeedback;
 use DB;
 use Illuminate\Http\Request;
@@ -34,39 +35,23 @@ class PromocaoFeedbackController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePromocaoFeedbackRequest $request)
     {
+        $dados = $request->validated();
 
-        $dados = $request->input();
+        try {
+            DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'novo_cargo' => 'required',
-            'novo_salario' => 'required',
-            'motivo' => 'required',
-            'percentual' => 'required|numeric|gt:0',
-            'tipo' => 'required',
-        ]);
+            PromocaoFeedback::create($dados);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar a Promoção',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-
-                PromocaoFeedback::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE PROMOÇÃO FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE PROMOÇÃO FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
-            }
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

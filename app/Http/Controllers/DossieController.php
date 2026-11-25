@@ -85,14 +85,6 @@ class DossieController extends Controller
         $feedback = FeedbackCurriculo::whereId($feedback)->first();
         $empresaId = (int) ($feedback->empresa_id ?? auth()->user()->empresa_id);
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, []);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();

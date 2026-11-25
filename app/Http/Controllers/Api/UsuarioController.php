@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreUsuarioApiRequest;
+use App\Http\Requests\Api\UpdateUsuarioApiRequest;
 use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use MasterTag\DataHora;
 
 class UsuarioController extends Controller
@@ -57,30 +58,10 @@ class UsuarioController extends Controller
         return Sistema::pg($resultado);
     }
 
-    public function store(Request $request)
+    public function store(StoreUsuarioApiRequest $request)
     {
-        if (!auth()->user()->tokenCan('usuario_create')) {
-            return response()->json([
-                'msg' => 'Acesso negado',
-                'error' => true
-            ], 403);
-        }
-
-        $validator = Validator::make($request->input(), [
-            'nome' => 'required|max:255',
-            'email' => 'required|email|unique:users',
-            'tipo' => 'required',
-            'papel_id' => 'required',
-            'telefone' => 'required|unique:users|max:14',
-            'password' => 'min:6|required_with:password_confirmation|same:password_confirmation',
-            'password_confirmation' => 'min:6'
-        ]);
-        if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
-        }
-
         try {
-            $dados = $validator->validated();
+            $dados = $request->validated();
             $dados['empresa_id'] = auth()->user()->empresa_id;
             $dados['grupo_id'] = $request->input('papel_id', $request->input('grupo_id'));
             unset($dados['password_confirmation']);
@@ -102,34 +83,12 @@ class UsuarioController extends Controller
         return $usuario;
     }
 
-    public function update(Request $request, User $usuario)
+    public function update(UpdateUsuarioApiRequest $request, User $usuario)
     {
-        if (!auth()->user()->tokenCan('usuario_update')) {
-            return response()->json([
-                'msg' => 'Acesso negado',
-                'error' => true
-            ], 403);
-        }
-
         $this->garantirMesmaEmpresa($usuario);
 
-        $validator = Validator::make($request->input(), [
-            'nome' => 'required|max:255',
-            'email' => 'required|email|unique:users,email,' . $usuario->id,
-            'tipo' => 'required',
-            'papel_id' => 'required',
-            'telefone' => 'required|max:14|unique:users,telefone,' . $usuario->id,
-            'alterar_senha' => 'boolean',
-            'password' => 'sometimes|min:6|required_with:password_confirmation|same:password_confirmation',
-            'password_confirmation' => 'sometimes|min:6'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
-        }
-
         try {
-            $dados = $validator->validated();
+            $dados = $request->validated();
             unset($dados['password_confirmation'], $dados['alterar_senha']);
             $dados['grupo_id'] = $request->input('papel_id');
             unset($dados['papel_id']);

@@ -6,7 +6,6 @@ use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Models\ClienteConfig;
 use App\Models\User;
 use App\Models\UsuarioWhatsappPreferencia;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class WhatsappNotificationGateService
@@ -26,27 +25,44 @@ class WhatsappNotificationGateService
         TipoMensagemWhatsapp $tipo,
         int $empresaId,
         ?int $destinatarioUserId = null,
+        bool $registrarMetricas = true,
     ): bool {
         if (!$this->empresaPermiteWhatsapp($empresaId)) {
+            if ($registrarMetricas) {
+                app(WhatsappBloqueioMetrics::class)->registrar(
+                    WhatsappBloqueioMetrics::MOTIVO_EMPRESA,
+                    $empresaId,
+                    ['tipo' => $tipo->value, 'modulo' => $tipo->modulo()],
+                );
+            }
+
             return false;
         }
 
         if (!$this->configService->isModuloHabilitado($empresaId, $tipo->modulo())) {
-            Log::info('WhatsApp bloqueado: módulo desabilitado na empresa', [
-                'empresa_id' => $empresaId,
-                'modulo' => $tipo->modulo(),
-                'tipo' => $tipo->value,
-            ]);
+            if ($registrarMetricas) {
+                app(WhatsappBloqueioMetrics::class)->registrar(
+                    WhatsappBloqueioMetrics::MOTIVO_MODULO,
+                    $empresaId,
+                    ['tipo' => $tipo->value, 'modulo' => $tipo->modulo()],
+                );
+            }
 
             return false;
         }
 
         if ($destinatarioUserId !== null && !$this->usuarioAceitaModulo($destinatarioUserId, $tipo->modulo())) {
-            Log::info('WhatsApp bloqueado: preferência do usuário', [
-                'user_id' => $destinatarioUserId,
-                'modulo' => $tipo->modulo(),
-                'tipo' => $tipo->value,
-            ]);
+            if ($registrarMetricas) {
+                app(WhatsappBloqueioMetrics::class)->registrar(
+                    WhatsappBloqueioMetrics::MOTIVO_PREFERENCIA,
+                    $empresaId,
+                    [
+                        'tipo' => $tipo->value,
+                        'modulo' => $tipo->modulo(),
+                        'destinatario_user_id' => $destinatarioUserId,
+                    ],
+                );
+            }
 
             return false;
         }

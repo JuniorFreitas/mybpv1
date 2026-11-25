@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\Cadastros\StoreFilialRequest;
+use App\Http\Requests\Cadastros\UpdateFilialRequest;
 use App\Models\Area;
 use App\Models\ClienteFilial;
 use App\Models\Servico;
@@ -21,56 +23,28 @@ class FilialController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreFilialRequest $request)
     {
-        $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
         $dto = ClienteFilial::DTO();
 
         $dados = array_fill_keys((array)$dto, $dados)[""];
         unset($dados['id']);
 
-        $validaComum = [
-            'dados.cnpj' => 'required|min:18',
-            'dados.razao_social' => 'required|min:2',
-            'dados.nome_fantasia' => 'required|min:2',
-            'dados.area_id' => 'required',
-            'dados.ramo' => 'required',
-            'dados.cep' => 'required|min:9',
-            'dados.uf' => 'required|min:2',
-            'dados.logradouro' => 'required|min:3',
-            'dados.bairro' => 'required|min:3',
-            'dados.municipio' => 'required|min:3',
-            'dados.email' => 'required|email',
-            'dados.telefone' => 'required|min:14',
-            'ativo' => 'required',
-        ];
+        try {
+            DB::beginTransaction();
+            ClienteFilial::withoutGlobalScopes()->create($dados);
+            DB::commit();
+            return response()->json([], 201);
 
-        $dadosValidados = \Validator::make($dados, $validaComum);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error STORE Filial:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
             return response()->json([
-                'msg' => 'Erro ao cadastrar Filial',
-                'erros' => $dadosValidados->errors()
+                'msg' => $msg,
             ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-                ClienteFilial::withoutGlobalScopes()->create($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $msg = "error STORE Filial:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json([
-                    'msg' => $msg,
-                ], 400);
-            }
         }
     }
 
@@ -86,55 +60,27 @@ class FilialController extends Controller
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function update(Request $request, ClienteFilial $filial)
+    public function update(UpdateFilialRequest $request, ClienteFilial $filial)
     {
-        $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
         $dto = ClienteFilial::DTO();
 
         $dados = array_fill_keys((array)$dto, $dados)[""];
 
-        $validaComum = [
-            'dados.cnpj' => 'required|min:18',
-            'dados.razao_social' => 'required|min:2',
-            'dados.nome_fantasia' => 'required|min:2',
-            'dados.area_id' => 'required',
-            'dados.ramo' => 'required',
-            'dados.cep' => 'required|min:9',
-            'dados.uf' => 'required|min:2',
-            'dados.logradouro' => 'required|min:3',
-            'dados.bairro' => 'required|min:3',
-            'dados.municipio' => 'required|min:3',
-            'dados.email' => 'required|email',
-            'dados.telefone' => 'required|min:14',
-            'ativo' => 'required',
-        ];
+        try {
+            DB::beginTransaction();
+            $filial->update($dados);
+            DB::commit();
+            return response()->json([], 201);
 
-        $dadosValidados = \Validator::make($dados, $validaComum);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error Update Filial:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
             return response()->json([
-                'msg' => 'Erro ao cadastrar Filial',
-                'erros' => $dadosValidados->errors()
+                'msg' => $msg,
             ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-                $filial->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $msg = "error Update Filial:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json([
-                    'msg' => $msg,
-                ], 400);
-            }
         }
     }
 

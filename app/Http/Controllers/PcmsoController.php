@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Treinamentos\StorePcmsoRequest;
+use App\Http\Requests\Treinamentos\UpdatePcmsoRequest;
 use App\Models\Pcmso;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PcmsoController extends Controller
 {
@@ -15,26 +16,10 @@ class PcmsoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePcmsoRequest $request)
     {
         $this->authorize('cadastro_empresa_pcmso_insert');
-        $dados = $request->input();
-
-        $regra = Rule::unique('pcmsos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        });
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra],
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar PCMSO',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated() + $request->input();
 
         try {
             DB::beginTransaction();
@@ -68,28 +53,12 @@ class PcmsoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePcmsoRequest $request, $id)
     {
         $this->authorize('cadastro_empresa_pcmso_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true';
+        $dados = $request->validated() + $request->input();
         $pcmso = Pcmso::find($id);
 
-        $regra = Rule::unique('pcmsos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        })->ignore($pcmso->id);
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra],
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar PCMSO',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
         try {
             DB::beginTransaction();
             $pcmso->update($dados);

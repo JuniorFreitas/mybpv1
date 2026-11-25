@@ -74,4 +74,29 @@ return [
         'public_id_salt' => env('API_EXTERNA_PUBLIC_ID_SALT'),
     ],
 
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+    ],
+
+    'zapdynamus' => [
+        'api_key' => env('ZAPDYNAMUS_API_KEY'),
+        'base_url' => env('ZAPDYNAMUS_BASE_URL', 'https://zapevolutionapi.dynamusti.com.br'),
+        'instancia' => env('ZAPDYNAMUS_INSTANCIA', 'mybp-notificacao'),
+    ],
+
+    'zapme' => [
+        'api' => env('API_ZAPME'),
+        'secret' => env('SECRET_ZAPME'),
+    ],
+
+    'telegram' => [
+        'bot_id' => env('BOT_ID'),
+        'chat_id' => env('CHAT_ID'),
+    ],
+
+    'sgi' => [
+        'x_api_token' => env('SGI_X_API_TOKEN', env('X_API_TOKEN')),
+    ],
+
 ];

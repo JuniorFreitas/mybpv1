@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StorePesquisaClimaRequest;
 use App\Models\PesquisaClimaCliente;
 use App\Models\PesquisaClimaPergunta;
 use App\Models\PesquisaClimaPerguntaRespostaCandidato;
@@ -63,59 +64,46 @@ class PesquisaClimaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePesquisaClimaRequest $request)
     {
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                '*.respostacandidato' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Pesquisa de Clima',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                foreach ($dados as $d) {
+            foreach ($dados as $d) {
 
-                    if (empty($d['resposta'])) {
-                        $array2 = [
-                            'feedback_id' => $d['feedback_id'],
-                            'cliente_id' => $d['cliente_id'],
-                            'pergunta_id' => $d['id'],
-                            'resposta_id' => 143,
-                            'respostadigitada' => $d['respostacandidato'],
-                        ];
+                if (empty($d['resposta'])) {
+                    $array2 = [
+                        'feedback_id' => $d['feedback_id'],
+                        'cliente_id' => $d['cliente_id'],
+                        'pergunta_id' => $d['id'],
+                        'resposta_id' => 143,
+                        'respostadigitada' => $d['respostacandidato'],
+                    ];
 
-                        PesquisaClimaPerguntaRespostaCandidato::create($array2);
+                    PesquisaClimaPerguntaRespostaCandidato::create($array2);
 
-                    }
-                    if (!empty($d['resposta'])) {
-                        $array = [
-                            'feedback_id' => $d['feedback_id'],
-                            'cliente_id' => $d['cliente_id'],
-                            'pergunta_id' => $d['id'],
-                            'resposta_id' => $d['respostacandidato'],
-                        ];
-
-                        PesquisaClimaPerguntaRespostaCandidato::create($array);
-                    }
                 }
+                if (!empty($d['resposta'])) {
+                    $array = [
+                        'feedback_id' => $d['feedback_id'],
+                        'cliente_id' => $d['cliente_id'],
+                        'pergunta_id' => $d['id'],
+                        'resposta_id' => $d['respostacandidato'],
+                    ];
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE PESQUISA CLIMA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                    PesquisaClimaPerguntaRespostaCandidato::create($array);
+                }
             }
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE PESQUISA CLIMA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

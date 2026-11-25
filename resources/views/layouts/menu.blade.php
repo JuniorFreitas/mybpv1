@@ -411,12 +411,16 @@
                                 </li>
                             @endcan
                             @can('configuracao_whatsapp')
+                                @if((bool) \App\Models\ClienteConfig::query()
+                                    ->where('cliente_id', auth()->user()->empresa_id)
+                                    ->value('envia_whatsapp'))
                                 <li>
                                     <a href="{{route('g.configuracoes.whatsapp.index')}}"
                                     parent="customizacoes" key="configuracao-whatsapp">
                                         WhatsApp
                                     </a>
                                 </li>
+                                @endif
                             @endcan
                         </ul>
                 </li>

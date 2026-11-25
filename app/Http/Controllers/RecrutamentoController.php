@@ -119,12 +119,12 @@ class RecrutamentoController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, Curriculo $recrutamento)
+    public function update(\App\Http\Requests\Recrutamento\UpdateRecrutamentoRequest $request, Curriculo $recrutamento)
     {
         try {
             DB::beginTransaction();
 
-            $requestData = $this->prepareRequestData($request->input());
+            $requestData = $this->prepareRequestData($request->all());
             $curriculumData = $requestData['curriculos'];
             $candidato = Curriculo::find($curriculumData['id']);
             $empresa = Cliente::find(auth()->user()->empresa_id);

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Historico\StoreFormularioNoventaDiasRequest;
+use App\Http\Requests\Historico\UpdateMedidasAdministrativasRequest;
 use App\Jobs\GerarTokenAvaliacaoNoventaDiasJob;
 use App\Models\Admissao;
 use App\Models\AvaliacaoNoventaDias;
@@ -471,24 +473,10 @@ class HistoricoController extends Controller
         }
     }
 
-    public function updateMedidas(Request $request, $feedback)
+    public function updateMedidas(UpdateMedidasAdministrativasRequest $request, $feedback)
     {
         $service = new MedidaAdministrativaService();
         $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-//            'data_inicio' => 'required',
-//            'data_fim' => 'required',
-//            'empresa_treinamento_id' => 'required',
-//            'treinamento_sgi_id' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             $service->updateMedidas($dados, $feedback);
@@ -503,52 +491,41 @@ class HistoricoController extends Controller
 
     //**************************FORMULARIO NOVENTA DIAS**************************//
 
-    public function storeFormularioNoventaDias(Request $request)
+    public function storeFormularioNoventaDias(StoreFormularioNoventaDiasRequest $request)
     {
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'gestor_imediato' => 'required'
-        ]);
+        try {
+            DB::beginTransaction();
+            $total = AvaliacaoNoventaFeedbackQuantidade::where('feedback_id', $dados['feedback_id'])
+                ->sum('quantidade_avaliacao');
+            $qntAvaliacao = $total > 0 ? intval($total) + 1 : 1;
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar as Notas',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $total = AvaliacaoNoventaFeedbackQuantidade::where('feedback_id', $dados['feedback_id'])
-                    ->sum('quantidade_avaliacao');
-                $qntAvaliacao = $total > 0 ? intval($total) + 1 : 1;
+            $info = [
+                'feedback_id' => $dados['feedback_id'],
+                'quantidade_avaliacao' => $qntAvaliacao,
+            ];
+            AvaliacaoNoventaFeedbackQuantidade::create($info);
 
-                $info = [
-                    'feedback_id' => $dados['feedback_id'],
-                    'quantidade_avaliacao' => $qntAvaliacao,
-                ];
-                AvaliacaoNoventaFeedbackQuantidade::create($info);
-
-                foreach ($dados['perguntas'] as $form) {
-                    $formulario = [];
-                    $formulario['feedback_id'] = $dados['feedback_id'];
-                    $formulario['pergunta_id'] = $form['id'];
-                    $formulario['gestor_id'] = auth()->user()->id;
-                    $formulario['nota'] = $form['nota'];
-                    $formulario['quantidade_avaliacao'] = $qntAvaliacao;
-                    $formulario['gestor_imediato'] = $dados['gestor_imediato'];
-                    $formulario['observacao'] = $dados['observacao'];
-                    AvaliacaoNoventaFeedback::create($formulario);
-                }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
+            foreach ($dados['perguntas'] as $form) {
+                $formulario = [];
+                $formulario['feedback_id'] = $dados['feedback_id'];
+                $formulario['pergunta_id'] = $form['id'];
+                $formulario['gestor_id'] = auth()->user()->id;
+                $formulario['nota'] = $form['nota'];
+                $formulario['quantidade_avaliacao'] = $qntAvaliacao;
+                $formulario['gestor_imediato'] = $dados['gestor_imediato'];
+                $formulario['observacao'] = $dados['observacao'];
+                AvaliacaoNoventaFeedback::create($formulario);
             }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

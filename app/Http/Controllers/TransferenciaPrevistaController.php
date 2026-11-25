@@ -19,7 +19,6 @@ use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class TransferenciaPrevistaController extends Controller
@@ -30,41 +29,19 @@ class TransferenciaPrevistaController extends Controller
     ) {
     }
 
-    public function store(Request $request)
+    /** Listagem vive no hub de Movimentação (SPA). */
+    public function index()
     {
-        $dados = $request->input();
+        return redirect()->route('g.movimentacao.index');
+    }
+
+    public function store(\App\Http\Requests\Movimentacao\StoreTransferenciaPrevistaRequest $request)
+    {
+        $dados = $request->all();
         $dados['user_id'] = auth()->id();
         $dados['empresa_id'] = auth()->user()->empresa_id;
         $dados['centro_custo_origem_id'] = $this->normalizarCentroCustoOrigemId($dados['centro_custo_origem_id'] ?? null);
         unset($dados['gestor_id'], $dados['gestor_destino_id']);
-
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_origem_id' => [
-                    'required',
-                    'integer',
-                    Rule::exists('centro_custos', 'id')->where('empresa_id', auth()->user()->empresa_id),
-                ],
-                'centro_custo_destino_id' => 'required',
-                'colaborador_id' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) {
-            Log::warning('transferencia.validacao_falhou', [
-                'empresa_id' => auth()->user()->empresa_id,
-                'user_id' => auth()->id(),
-                'erros' => $dadosValidados->errors()->toArray(),
-                'centro_custo_origem_id' => $dados['centro_custo_origem_id'] ?? null,
-                'centro_custo_destino_id' => $dados['centro_custo_destino_id'] ?? null,
-                'colaborador_id' => $dados['colaborador_id'] ?? null,
-            ]);
-
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Transferência',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -138,31 +115,12 @@ class TransferenciaPrevistaController extends Controller
         return response()->json($payload);
     }
 
-    public function update(Request $request, TransferenciaPrevista $transferenciaPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateTransferenciaPrevistaRequest $request, TransferenciaPrevista $transferenciaPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['user_id'] = auth()->user()->id;
         $dados['centro_custo_origem_id'] = $this->normalizarCentroCustoOrigemId($dados['centro_custo_origem_id'] ?? null);
         unset($dados['gestor_id'], $dados['gestor_destino_id'], $dados['fluxo_gestores_automatico']);
-
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_origem_id' => [
-                    'required',
-                    'integer',
-                    Rule::exists('centro_custos', 'id')->where('empresa_id', auth()->user()->empresa_id),
-                ],
-                'centro_custo_destino_id' => 'required',
-                'colaborador_id' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar Solicitação de Transferência',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();

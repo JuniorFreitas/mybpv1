@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreDocumentoPreadmissaoRequest;
+use App\Http\Requests\Documentos\UpdateDocumentoPreadmissaoRequest;
 use App\Services\Preadmissao\DocumentoPreadmissaoCadastroService;
 use App\Models\User;
 use DomainException;
@@ -26,21 +28,12 @@ class DocumentoPreadmissaoController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreDocumentoPreadmissaoRequest $request): JsonResponse
     {
         $this->authorize('cadastro_documentos_preadmissao_insert');
 
-        $dadosValidados = \Validator::make($request->input(), $this->regrasValidacao());
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao cadastrar documento',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
-
         try {
-            $dados = $dadosValidados->validated();
+            $dados = $request->validated();
             $dados['configuracoes'] = $request->input('configuracoes', []);
             $this->cadastroService->criar($dados, $this->empresaIdObrigatoria());
 
@@ -69,21 +62,12 @@ class DocumentoPreadmissaoController extends Controller
         }
     }
 
-    public function update(Request $request, $documento): JsonResponse
+    public function update(UpdateDocumentoPreadmissaoRequest $request, $documento): JsonResponse
     {
         $this->authorize('cadastro_documentos_preadmissao_update');
 
-        $dadosValidados = \Validator::make($request->input(), $this->regrasValidacao());
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao editar documento',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
-
         try {
-            $dados = $dadosValidados->validated();
+            $dados = $request->validated();
             $dados['configuracoes'] = $request->input('configuracoes', []);
             $this->cadastroService->atualizar((int) $documento, $dados, $this->empresaIdObrigatoria());
 
@@ -147,22 +131,6 @@ class DocumentoPreadmissaoController extends Controller
 
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function regrasValidacao(): array
-    {
-        return [
-            'label' => 'required|string|max:255',
-            'descricao' => 'nullable|string',
-            'categoria_id' => 'nullable|integer',
-            'categoria_nova' => 'nullable|string|max:255',
-            'ordem' => 'nullable|integer|min:0',
-            'ativo' => 'required|boolean',
-            'configuracoes' => 'nullable|array',
-        ];
     }
 
     private function empresaId(): ?int

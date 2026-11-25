@@ -22,7 +22,7 @@ export default defineConfig({
     projects: [
         {
             name: 'setup',
-            testMatch: /auth\.setup\.ts/,
+            testMatch: /(?:whatsapp|regressao)\/auth\.setup\.ts/,
             use: {
                 ...devices['Desktop Chrome'],
                 channel: 'chrome',
@@ -37,6 +37,17 @@ export default defineConfig({
                 ...devices['Desktop Chrome'],
                 channel: 'chrome',
                 headless: false,
+                storageState: 'playwright/.auth/user.json',
+            },
+        },
+        {
+            name: 'regressao-chrome',
+            testMatch: /regressao\/.*\.spec\.ts/,
+            dependencies: ['setup'],
+            use: {
+                ...devices['Desktop Chrome'],
+                channel: 'chrome',
+                headless: process.env.PLAYWRIGHT_HEADED === '1' ? false : true,
                 storageState: 'playwright/.auth/user.json',
             },
         },

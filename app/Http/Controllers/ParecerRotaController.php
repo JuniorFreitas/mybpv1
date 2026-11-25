@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
+use App\Http\Requests\Entrevista\EnviarWhatsappParecerRotaRequest;
+use App\Http\Requests\Entrevista\StoreParecerRotaRequest;
+use App\Http\Requests\Entrevista\UpdateParecerRotaRequest;
 use App\Jobs\JobExportaParecerRota;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerRota;
@@ -45,39 +48,9 @@ class ParecerRotaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreParecerRotaRequest $request)
     {
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'feedback_id' => 'required|exists:feedback_curriculos,id',
-            'tem_rota' => 'required|boolean',
-            'pega_onibus' => 'nullable|boolean',
-            'vale_transporte' => 'required|boolean',
-            'rota_atende' => 'required|boolean',
-            'rota_tipo' => 'required|string|max:100',
-            'quem_entrevistou' => 'required|string|min:3|max:255'
-        ], [
-            'feedback_id.required' => 'ID do feedback é obrigatório',
-            'feedback_id.exists' => 'Feedback não encontrado',
-            'tem_rota.required' => 'Informe se tem rota',
-            'tem_rota.boolean' => 'Campo tem rota deve ser verdadeiro ou falso',
-            'vale_transporte.required' => 'Informe sobre vale transporte',
-            'vale_transporte.boolean' => 'Campo vale transporte deve ser verdadeiro ou falso',
-            'rota_atende.required' => 'Informe se a rota atende',
-            'rota_atende.boolean' => 'Campo rota atende deve ser verdadeiro ou falso',
-            'rota_tipo.required' => 'Tipo de rota é obrigatório',
-            'rota_tipo.max' => 'Tipo de rota deve ter no máximo 100 caracteres',
-            'quem_entrevistou.required' => 'Nome do entrevistador é obrigatório',
-            'quem_entrevistou.min' => 'Nome do entrevistador deve ter pelo menos 3 caracteres',
-            'quem_entrevistou.max' => 'Nome do entrevistador deve ter no máximo 255 caracteres'
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao salvar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -170,31 +143,9 @@ class ParecerRotaController extends Controller
      * @param \App\Models\ParecerRota $parecerRota
      * @return JsonResponse
      */
-    public function update(Request $request, ParecerRota $parecerRota)
+    public function update(UpdateParecerRotaRequest $request, ParecerRota $parecerRota)
     {
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'tem_rota' => 'sometimes|boolean',
-            'pega_onibus' => 'nullable|boolean',
-            'vale_transporte' => 'sometimes|boolean',
-            'rota_atende' => 'sometimes|boolean',
-            'rota_tipo' => 'sometimes|string|max:100',
-            'quem_entrevistou' => 'sometimes|string|min:3|max:255'
-        ], [
-            'tem_rota.boolean' => 'Campo tem rota deve ser verdadeiro ou falso',
-            'vale_transporte.boolean' => 'Campo vale transporte deve ser verdadeiro ou falso',
-            'rota_atende.boolean' => 'Campo rota atende deve ser verdadeiro ou falso',
-            'rota_tipo.max' => 'Tipo de rota deve ter no máximo 100 caracteres',
-            'quem_entrevistou.min' => 'Nome do entrevistador deve ter pelo menos 3 caracteres',
-            'quem_entrevistou.max' => 'Nome do entrevistador deve ter no máximo 255 caracteres'
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao alterar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -302,30 +253,15 @@ class ParecerRotaController extends Controller
     /**
      * Envia informações da rota via WhatsApp ao candidato.
      */
-    public function enviarWhatsapp(Request $request, ParecerRota $parecerRota, ParecerRotaWhatsappService $whatsappService): JsonResponse
+    public function enviarWhatsapp(EnviarWhatsappParecerRotaRequest $request, ParecerRota $parecerRota, ParecerRotaWhatsappService $whatsappService): JsonResponse
     {
-        $dadosValidados = \Validator::make($request->all(), [
-            'telefone' => 'required|string|min:10',
-            'tipo' => 'required|in:' . TelefoneCurriculo::TIPO_WHATS,
-        ], [
-            'telefone.required' => 'Informe o telefone WhatsApp do candidato',
-            'telefone.min' => 'Telefone inválido',
-            'tipo.required' => 'Informe o tipo do telefone',
-            'tipo.in' => 'O telefone deve ser do tipo WhatsApp',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao enviar WhatsApp',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
+        $dadosValidados = $request->validated();
 
         try {
             $parecerAtualizado = $whatsappService->enviar(
                 $parecerRota,
-                $dadosValidados->validated()['telefone'],
-                $dadosValidados->validated()['tipo'],
+                $dadosValidados['telefone'],
+                $dadosValidados['tipo'],
                 auth()->user()
             );
 

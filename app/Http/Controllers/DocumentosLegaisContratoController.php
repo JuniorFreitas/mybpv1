@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientesExport;
+use App\Http\Requests\Documentos\StoreDocumentoContratoRequest;
+use App\Http\Requests\Documentos\UpdateDocumentoContratoRequest;
 use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
@@ -49,69 +51,10 @@ class DocumentosLegaisContratoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreDocumentoContratoRequest $request)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $dados['dados_cadastrais']['email'] = trim(mb_strtolower($dados['dados_cadastrais']['email']));
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $arrayValidacao = [
-            'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
-                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ' : 'Preencha o campo informando nome. ';
-                    $fail($mensagem);
-                }
-            }],
-            'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados) {
-
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
-                    $fail('Informe um CPF válido.');
-                }
-                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->first();
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
-                    $fail('CPF já cadastrado');
-                }
-            }],
-            'dados_cadastrais.razao_social' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
-                    $fail('Preencha o campo informando razão social.');
-                }
-            }],
-            'dados_cadastrais.nome_fantasia' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
-                    $fail('Preencha o campo informando nome fantasia.');
-                }
-            }],
-            'dados_cadastrais.cnpj' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
-                    $fail('Preencha o campo informando CNPJ.');
-                }
-                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
-                    $fail('CNPJ já cadastrado');
-                }
-            }],
-            'dados_cadastrais.email' => 'required|email:rfc,dns',
-            'dados_cadastrais.telefones' => ["required", "array", "min:1"],
-            'dados_cadastrais.telefones.*.numero' => 'required|min:14',
-            'dados_cadastrais.cep' => 'required|min:9',
-            'dados_cadastrais.logradouro' => 'required',
-            'dados_cadastrais.bairro' => 'required',
-            'dados_cadastrais.municipio' => 'required',
-            'dados_cadastrais.uf' => 'required|min:2',
-            'dados_cadastrais.ramo' => 'required',
-            'dados_cadastrais.area_id' => 'required',
-        ];
-
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Contrato',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -210,70 +153,10 @@ class DocumentosLegaisContratoController extends Controller
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function update(Request $request, DocumentoContratos $contrato)
+    public function update(\App\Http\Requests\Documentos\UpdateDocumentoContratoRequest $request, DocumentoContratos $contrato)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $dados['dados_cadastrais']['email'] = trim(mb_strtolower($dados['dados_cadastrais']['email']));
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $arrayValidacao = [
-            'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
-                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ' : 'Preencha o campo informando nome. ';
-                    $fail($mensagem);
-                }
-            }],
-            'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados, $request) {
-
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
-                    $fail('Informe um CPF válido.');
-                }
-
-//                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->where('id', $request->segment(5))->first();
-//                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !$verificaCpf) {
-//                    $fail('Não é possível alterar um CPF já cadastrado');
-//                }
-            }],
-            'dados_cadastrais.razao_social' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
-                    $fail('Preencha o campo informando razão social.');
-                }
-            }],
-            'dados_cadastrais.nome_fantasia' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
-                    $fail('Preencha o campo informando nome fantasia.');
-                }
-            }],
-            'dados_cadastrais.cnpj' => [function ($attribute, $value, $fail) use ($dados, $request) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
-                    $fail('Preencha o campo informando CNPJ.');
-                }
-//                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->where('id', $request->segment(5))->first();
-//                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && !$verificaCnpj) {
-//                    $fail('Não é possível alterar um CNPJ já cadastrado');
-//                }
-            }],
-            'dados_cadastrais.email' => 'required|email:rfc,dns',
-            'dados_cadastrais.telefones' => ["required", "array", "min:1"],
-            'dados_cadastrais.telefones.*.numero' => 'required|min:14',
-            'dados_cadastrais.cep' => 'required|min:9',
-            'dados_cadastrais.logradouro' => 'required',
-            'dados_cadastrais.bairro' => 'required',
-            'dados_cadastrais.municipio' => 'required',
-            'dados_cadastrais.uf' => 'required|min:2',
-            'dados_cadastrais.ramo' => 'required',
-            'dados_cadastrais.area_id' => 'required',
-        ];
-
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Legais',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();

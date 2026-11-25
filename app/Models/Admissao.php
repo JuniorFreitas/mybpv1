@@ -501,14 +501,14 @@ class Admissao extends Model
         return null;
     }
 
-    //Acessor ->data_adm_prevista
     public function setDataAsoAttribute($value)
     {
         if (!is_null($value) && $value != 'aaaa-mm-dd') {
             $data = new DataHora($value);
             $this->attributes['data_aso'] = $data->dataInsert();
+        } else {
+            $this->attributes['data_aso'] = null;
         }
-        $this->attributes['data_aso'] = null;
     }
 
     public function getDataEntregaAreaAttribute($value)

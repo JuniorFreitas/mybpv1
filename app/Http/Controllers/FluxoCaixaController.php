@@ -67,21 +67,7 @@ class FluxoCaixaController extends Controller {
         return $lancamento;
     }
 
-    public function cadastrarLancamento(Request $request, User $empresa, Lancamento $lancamento) {
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'data_hora' => 'required|min:19|date_format:d/m/Y à\s H:i',
-            'plano_id' => 'required|numeric|min:1',
-            'operacao' => 'required|in:C,D,T',
-            'formas.*.id' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar o lançamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+    public function cadastrarLancamento(\App\Http\Requests\Financeiro\StoreLancamentoRequest $request, User $empresa, Lancamento $lancamento) {
         try {
             \DB::beginTransaction();
 
@@ -163,29 +149,14 @@ class FluxoCaixaController extends Controller {
         }
     }
 
-    public function alterarLancamento(Request $request, User $empresa, Lancamento $lancamento) {
+    public function alterarLancamento(\App\Http\Requests\Financeiro\UpdateLancamentoRequest $request, User $empresa, Lancamento $lancamento) {
 
         $this->authorize('financeiro_fluxo-caixa_update');
         $PODE_REALIZAR = auth()->user()->can('privilegio_realizar-lancamento');
 
 
-        $dadosValidados = \Validator::make($request->all(), [
-            'data_hora' => 'required|min:19|date_format:d/m/Y à\s H:i',
-            'plano_id' => 'required|numeric|min:1',
-            'operacao' => 'required|in:C,D,T',
-            'formas.*.id' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar o lançamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             \DB::beginTransaction();
-
-
 
             $data_hora = explode(' às ', $request->data_hora);
             $dataHoraLancamento = new DataHora($data_hora[0] . " " . $data_hora[1] . ":00");
@@ -335,19 +306,7 @@ class FluxoCaixaController extends Controller {
 
     }
 
-    public function mudarStatus(Request $request, User $empresa, Lancamento $lancamento) {
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'status' => 'required|boolean',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao mudar status o lançamento',
-                'erros' => $dadosValidados->errors(),
-                'lancamento' => $lancamento
-            ], 400);
-        }
+    public function mudarStatus(\App\Http\Requests\Financeiro\MudarStatusLancamentoRequest $request, User $empresa, Lancamento $lancamento) {
         try {
             \DB::beginTransaction();
 
@@ -374,7 +333,7 @@ class FluxoCaixaController extends Controller {
             \DB::rollBack();
             return response()->json([
                 'msg' => $e->getMessage(),
-                'erros' => $dadosValidados->errors(),
+                'erros' => [],
                 'lancamento' => $lancamento
             ], 400);
             return response()->json(['msg' => $e->getMessage()], 400);
@@ -575,11 +534,8 @@ class FluxoCaixaController extends Controller {
 
         require __DIR__ . '/vendor/autoload.php';
 
-        ini_set("memory_limit", -1);
-        ini_set('max_execution_time', -1);
-
-        //ini_set('memory_limit', '2000M');
-        //ini_set('max_execution_time', '-1');
+        // PERF-MEM-001: HTTP não usa -1 nem max_execution_time=0 (prende FPM).
+        // Herda php.ini-production (memory_limit=256M, max_execution_time=60).
         /*$contas = ContaCorrente::whereHas('Usuario', function ($q) {
             //$q->whereIn('tipo', [User::$PESSOA_FISICA, User::$PESSOA_JURIDICA]);
         });*/

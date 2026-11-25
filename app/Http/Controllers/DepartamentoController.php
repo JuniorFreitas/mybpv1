@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreDepartamentoRequest;
+use App\Http\Requests\Cadastros\UpdateDepartamentoRequest;
 use App\Models\Cliente;
 use App\Models\Departamento;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class DepartamentoController extends Controller
 {
@@ -37,41 +38,22 @@ class DepartamentoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreDepartamentoRequest $request)
     {
-        $this->authorize('cadastro_departamento_insert');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $regra = Rule::unique('departamentos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        });
+        try {
+            DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra],
-//                'empresa_id' => 'required',
-                'ativo' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Departamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            Departamento::create($dados);
 
-                Departamento::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE DEPARTAMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE DEPARTAMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -104,41 +86,23 @@ class DepartamentoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateDepartamentoRequest $request, $id)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dep = Departamento::where('id', $id)->first();
 
-        $regra = Rule::unique('departamentos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        })->ignore($dep->id);
+        try {
+            DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-                'label' => ['required', $regra],
-//                'empresa_id' => 'required',
-                'ativo' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Departamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            $dep->update($dados);
 
-                $dep->update($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE DEPARTAMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE DEPARTAMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

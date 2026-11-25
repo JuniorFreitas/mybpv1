@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\parecerTestePraticoExport;
+use App\Http\Requests\Entrevista\StoreParecerTestePraticoRequest;
+use App\Http\Requests\Entrevista\UpdateParecerTestePraticoRequest;
 use App\Jobs\JobExportaExcel;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerTestePratico;
@@ -41,31 +43,19 @@ class ParecerTestePraticoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreParecerTestePraticoRequest $request)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'fez_teste' => 'required',
-            'parecer_final_teste' => 'required',
-            'quem_entrevistou' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                ParecerTestePratico::create($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        try {
+            DB::beginTransaction();
+            ParecerTestePratico::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -106,31 +96,19 @@ class ParecerTestePraticoController extends Controller
      * @param \App\Models\ParecerTestePratico $parecerTestePratico
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ParecerTestePratico $parecerTestePratico)
+    public function update(UpdateParecerTestePraticoRequest $request, ParecerTestePratico $parecerTestePratico)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'fez_teste' => 'required',
-            'parecer_final_teste' => 'required',
-            'quem_entrevistou' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $parecerTestePratico->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        try {
+            DB::beginTransaction();
+            $parecerTestePratico->update($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

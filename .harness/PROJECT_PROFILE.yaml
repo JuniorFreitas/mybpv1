@@ -1,17 +1,25 @@
-# Perfil de engenharia do projeto MyBPIN (inspecionado em 2026-11-13).
+# Perfil de engenharia do projeto MyBPIN (reinspecionado em 2026-11-23).
 project:
   name: "MyBPIN"
   language: "pt-BR"
+  version: "2.0.3"
+  branch: "develop"
+  path: "/Users/juniorfreitas/Desktop/WEB/2026/mybp"
+  devteam_slug: "mybp"
 
   product:
-    vision: "Sistema de Gestão de RH (recrutamento, admissões, treinamentos, avaliações, assinatura digital)"
+    vision: "Sistema de Gestão de RH (recrutamento, admissões, treinamentos, avaliações, assinatura digital, ponto, exames)"
     target_users:
       - "Equipes de RH"
       - "Gestores"
       - "Candidatos (fluxos públicos/admissão)"
+      - "Clínicas (acesso-clinica)"
+      - "Integrações externas / agents (API v3)"
     business_goals:
       - "Operar fluxos críticos de RH com segurança e confiabilidade"
       - "Multi-tenant por empresa_id"
+      - "Exportações/e-mails assíncronos (fila)"
+      - "API externa somente-leitura para parceiros e agents"
 
   methodology:
     workflow: "kanban"
@@ -21,39 +29,109 @@ project:
 
   technologies:
     backend:
-      - "PHP 8.2"
+      - "PHP ^8.3 (platform composer 8.3.0)"
       - "Laravel 12"
+      - "Sanctum"
       - "Horizon"
       - "Reverb/Pusher"
+      - "Spatie Activity Log"
+      - "Maatwebsite Excel"
+      - "DomPDF"
     frontend:
       - "Vue 3"
-      - "Laravel Mix"
+      - "Vite 6 (migração concluída; Mix removido)"
+      - "Bootstrap 4 + jQuery (legado)"
+      - "Axios"
+      - "Laravel Echo"
     database:
       - "MySQL (produção/dev)"
       - "SQLite :memory: (testes)"
     infrastructure:
-      - "Docker Compose"
-      - "Nginx + PHP-FPM 8.2"
+      - "Docker Compose (container mybpdp)"
+      - "Nginx + PHP-FPM"
+      - "Redis (cache/fila/Horizon)"
       - "AWS ECS (deploy)"
 
   architecture:
-    style: "Laravel modular + Vue SPA parcial; serviços de domínio em app/; jobs/filas para exportações e e-mails"
+    style: "Monólito Laravel modular + frontend híbrido Blade/Vue 3 por tela; Domain/Services/Jobs crescentes; multi-tenant por empresa_id"
+    layers:
+      - "HTTP: routes/web.php (g/*), routes/api.php, API v3 externa"
+      - "Domain: app/Domain (Ajuda, Whatsapp, Ai), app/Services"
+      - "Persistence: Eloquent + Query Builder em listagens/exportações"
+      - "Async: Jobs/Horizon para e-mails, exports CIH, WhatsApp"
+    modules:
+      - "Identidade e acesso"
+      - "Administração e cadastros"
+      - "Recrutamento e currículos"
+      - "Entrevistas e resultado integrado"
+      - "Admissão / pré-admissão / pós-admissão"
+      - "Assinatura digital"
+      - "Planejamento e movimentações"
+      - "Controle de exames / ASO"
+      - "Treinamentos"
+      - "Controle de ponto"
+      - "Relatórios, NPS, pesquisa de clima"
+      - "Weekly report, chat, cloud"
+      - "Financeiro"
+      - "API Externa v3 (OAuth client credentials, somente GET)"
+
+  inventory:
+    models: 256
+    controllers: 198
+    jobs: 142
+    migrations: 660
+    test_files: 128
+    frontend_apps_g:
+      - "administracao"
+      - "admissao"
+      - "cadastros"
+      - "controle-exames"
+      - "controle-ponto"
+      - "curriculos"
+      - "entrevistas"
+      - "planejamento"
+      - "posadmissao"
+      - "relatorios"
+      - "treinamentos"
+      - "weekly-report"
+      - "chat"
+      - "cloud"
+      - "financeiro"
+      - "configuracoes"
 
   commands:
-    install: "docker compose up -d && docker compose exec mybpdp composer install && npm install"
+    install: "docker compose up -d && docker compose exec mybpdp composer install && nvm use && npm ci"
     run: "docker compose up -d"
     test: "docker compose exec mybpdp php artisan test"
-    lint: "to_be_discovered"
-    build: "npm run dev | npm run prod"
+    lint: "npx eslint resources/js --ext .js,.vue (parcial)"
+    build: "npm run hot | npm run build | npm run prod"
+    logs: "docker compose exec mybpdp tail -f storage/logs/laravel.log"
 
   quality:
     unit_tests: true
     integration_tests: true
+    e2e_tests: "Playwright (WhatsApp e2e parcial)"
     code_review: true
     acceptance_tests: true
+    tests_db: "sqlite :memory: obrigatório (phpunit.xml)"
 
   development:
-    commit_convention: "mensagens descritivas em português/inglês misturado (inspecionar git log por demanda)"
+    commit_convention: "mensagens descritivas; PRs em feature/* mergeados em develop"
+    standards:
+      - "AGENTS.md (segurança, SOLID/DDD, Eloquent vs QB, exports CIH, e-mails em fila, cache TTL)"
+      - "docs/PADRAO_UX_* e skills .cursor/skills/mybp-*"
+      - "Form Request para validações complexas (ainda pouco adotado)"
+
+  risks_open:
+    - "SEC-001 CVE upload_progress — NEEDS APPROVAL (approval #1 production_deploy)"
+    - "SEC-002 apikey ZapDynamus hardcoded — NEEDS APPROVAL (approval #2 secret_change)"
+    - "SEC-003 Recaptcha fail-open/TLS"
+    - "BUG-001 setDataAsoAttribute zera data_aso"
+    - "Controllers/models grandes; Form Requests escassos; withoutGlobalScopes em volume"
+  backlog:
+    index: ".harness/backlog/INDEX.md"
+    sprint_devteam: "Housekeeping 2026-11 (#2)"
+    tasks_count: 22
 
   autonomy:
     local_development: "allowed"

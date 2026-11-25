@@ -28,7 +28,7 @@ class MudancaCargoController extends Controller
      */
     public function index()
     {
-        //
+        return redirect()->route('g.movimentacao.index');
     }
 
     /**
@@ -47,80 +47,11 @@ class MudancaCargoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreMudancaCargoRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados = $this->normalizarLotacaoMudancaCargo($dados);
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'novo_centro_custo_id' => 'required_if:mantem_centro_custo,false',
-                'novo_centro_custo_filial_id' => 'nullable|integer',
-                'nova_vaga_aberta_id' => 'required_if:mantem_cargo,false',
-                'nova_funcao' => 'required_if:mantem_funcao,false',
-                'novo_salario' => 'required_if:mantem_salario,false',
-                'colaborador_id' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Informe um colaborar para continuar');
-                        }
-                    }
-                ],
-                'gestor_id' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Informe um gestor responsável');
-                        }
-                    }
-                ],
-                'treinamento_data_inicio' => 'required_if:treinamento_funcao,true',
-                'treinamento_data_fim' => 'required_if:treinamento_funcao,true',
-                'treinamento_termo_ciencia' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-                            if (empty($value) || !is_array($value) || count($value) == 0) {
-                                $fail('O Termo de Ciência de Treinamento é obrigatório quando há treinamento na função');
-                            }
-                        }
-                    }
-                ],
-                'treinamento_certificado' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-                            if (empty($value) || !is_array($value) || count($value) == 0) {
-                                $fail('O Certificado de Treinamento é obrigatório quando há treinamento na função');
-                            }
-                        }
-                    }
-                ],
-            ]
-        );
-
-        // Validação de datas de treinamento
-        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-            if (isset($dados['treinamento_data_inicio']) && isset($dados['treinamento_data_fim']) &&
-                !empty($dados['treinamento_data_inicio']) && !empty($dados['treinamento_data_fim'])) {
-
-                try {
-                    $dataInicio = new DataHora($dados['treinamento_data_inicio']);
-                    $dataFim = new DataHora($dados['treinamento_data_fim']);
-
-                    if ($dataInicio->dataInsert() > $dataFim->dataInsert()) {
-                        $dadosValidados->errors()->add('treinamento_data_inicio', 'A data de início do treinamento não pode ser maior que a data de fim do treinamento');
-                        $dadosValidados->errors()->add('treinamento_data_fim', 'A data de fim do treinamento não pode ser menor que a data de início do treinamento');
-                    }
-                } catch (\Exception $e) {
-                    // Se houver erro na conversão das datas, a validação padrão já vai pegar
-                }
-            }
-        }
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Mudança de Cargo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
 

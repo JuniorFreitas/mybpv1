@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ponto\UpdateAjusteJornadaRequest;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
 use Illuminate\Http\Request;
@@ -75,11 +76,11 @@ class AjusteJornadaController extends Controller {
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
+     * @param UpdateAjusteJornadaRequest $request
+     * @param PontoEletronico $ponto
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PontoEletronico $ponto) {
+    public function update(UpdateAjusteJornadaRequest $request, PontoEletronico $ponto) {
         //primeiro verificar se pode alterar uma jornada que ainda esta em andamento hoje
         $hoje = new DataHora();
         $pontoDeHoje = $hoje->dataCompleta() === $ponto->dia;
@@ -89,82 +90,66 @@ class AjusteJornadaController extends Controller {
         if($pontoDeHoje){
             return response()->json(['msg' => 'Pontos gerados hoje não podem ser modificados.'], 400);
         }
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'periodos' => 'required',
-            'ocorrencia_id'=> 'required|numeric',
-            'periodos.*.entrada' => 'required|min:5',
-            'periodos.*.saida' => 'required|min:5',
-        ]);
+        try {
+            \DB::beginTransaction();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao registrar o ponto',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
+            $ponto->justificativa = $request->justificativa;
+            $ponto->ocorrencia_id = $request->ocorrencia_id;
+            $ponto->verificado = $request->verificado;
+            $ponto->save();
+            //Apagar periodos
+            if($request->filled('periodosDelete')){
+                foreach ($request->periodosDelete as $periodos_id){
 
-                \DB::beginTransaction();
-
-                $ponto->justificativa = $request->justificativa;
-                $ponto->ocorrencia_id = $request->ocorrencia_id;
-                $ponto->verificado = $request->verificado;
-                $ponto->save();
-                //Apagar periodos
-                if($request->filled('periodosDelete')){
-                    foreach ($request->periodosDelete as $periodos_id){
-
-                        $periodo = $ponto->Periodos()->where('id',$periodos_id)->first();
-                        $periodo->FotoEntrada->excluir();
-                        $periodo->FotoSaida->excluir();
-                        $periodo->delete();
-                    }
-
+                    $periodo = $ponto->Periodos()->where('id',$periodos_id)->first();
+                    $periodo->FotoEntrada->excluir();
+                    $periodo->FotoSaida->excluir();
+                    $periodo->delete();
                 }
-                if($request->filled('periodos')){
 
-                    foreach ($request->periodos as $periodo){
-
-                        if(intval($periodo['id'])>0){
-                            $entrada =  explode(' às ',$periodo['entradaCompleto']);
-                            $entrada = new DataHora($entrada[0].' '.$entrada[1]);
-                            $saida =  explode(' às ',$periodo['saidaCompleto']);
-                            $saida = new DataHora($saida[0].' '.$saida[1]);
-                            $duracao = DataHora::diferencaMinutos($entrada->dataHoraInsert(),$saida->dataHoraInsert());
-                            $ponto->Periodos()->where('id',$periodo['id'])->update([
-                                'entrada'=>$entrada->dataHoraInsert(),
-                                'saida'=>$saida->dataHoraInsert(),
-                                'minutos'=> $duracao
-                            ]);
-                        }else{
-                            $entrada =  explode(' às ',$periodo['entradaCompleto']);
-                            $entrada = new DataHora($entrada[0].' '.$entrada[1]);
-                            $saida =  explode(' às ',$periodo['saidaCompleto']);
-                            $saida = new DataHora($saida[0].' '.$saida[1]);
-                            $duracao = DataHora::diferencaMinutos($entrada->dataHoraInsert(),$saida->dataHoraInsert());
-                            $ponto->Periodos()->where('id',$periodo['id'])->create([
-                                'entrada'=>$entrada->dataHoraInsert(),
-                                'facial_entrada'=>false,
-                                'saida'=>$saida->dataHoraInsert(),
-                                'facial_saida'=>false,
-                                'minutos'=> $duracao
-                            ]);
-                        }
-                    }
-                }else{
-                    throw new \Exception('O ponto eletrônico está sem periodos!. Verificar os periodos');
-                }
-                $ponto->recalcularDuracoes();
-
-                \DB::commit();
-                return response()->json($ponto, 201);
-
-            }catch (\Exception $exception) {
-                \DB::rollBack();
-
-                return response()->json(['msg' => $exception->getMessage()], 500);
             }
+            if($request->filled('periodos')){
+
+                foreach ($request->periodos as $periodo){
+
+                    if(intval($periodo['id'])>0){
+                        $entrada =  explode(' às ',$periodo['entradaCompleto']);
+                        $entrada = new DataHora($entrada[0].' '.$entrada[1]);
+                        $saida =  explode(' às ',$periodo['saidaCompleto']);
+                        $saida = new DataHora($saida[0].' '.$saida[1]);
+                        $duracao = DataHora::diferencaMinutos($entrada->dataHoraInsert(),$saida->dataHoraInsert());
+                        $ponto->Periodos()->where('id',$periodo['id'])->update([
+                            'entrada'=>$entrada->dataHoraInsert(),
+                            'saida'=>$saida->dataHoraInsert(),
+                            'minutos'=> $duracao
+                        ]);
+                    }else{
+                        $entrada =  explode(' às ',$periodo['entradaCompleto']);
+                        $entrada = new DataHora($entrada[0].' '.$entrada[1]);
+                        $saida =  explode(' às ',$periodo['saidaCompleto']);
+                        $saida = new DataHora($saida[0].' '.$saida[1]);
+                        $duracao = DataHora::diferencaMinutos($entrada->dataHoraInsert(),$saida->dataHoraInsert());
+                        $ponto->Periodos()->where('id',$periodo['id'])->create([
+                            'entrada'=>$entrada->dataHoraInsert(),
+                            'facial_entrada'=>false,
+                            'saida'=>$saida->dataHoraInsert(),
+                            'facial_saida'=>false,
+                            'minutos'=> $duracao
+                        ]);
+                    }
+                }
+            }else{
+                throw new \Exception('O ponto eletrônico está sem periodos!. Verificar os periodos');
+            }
+            $ponto->recalcularDuracoes();
+
+            \DB::commit();
+            return response()->json($ponto, 201);
+
+        }catch (\Exception $exception) {
+            \DB::rollBack();
+
+            return response()->json(['msg' => $exception->getMessage()], 500);
         }
     }
 

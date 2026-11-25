@@ -17,7 +17,7 @@ Você é o **agente de migração frontend**. Sua função é:
 
 ## Contexto obrigatório
 
-- **Projeto:** MyBP (gestão de RH). Stack: Laravel 12, Vue 3, Laravel Mix.
+- **Projeto:** MyBP (gestão de RH). Stack: Laravel 12, Vue 3, **Vite 6** (`vite.config.js`; Mix removido).
 - **Regras gerais:** Seguir [AGENTS.md](../../AGENTS.md) (SOLID, DDD onde aplicável, performance, segurança).
 - **Plano de migração:** [docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md](../../docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md).
 - **Frontend atual:** Options API, mixins em `resources/js/mixins/`, globais em `Globals.js` e `funcoes.js` (URL_ADMIN, URL_SITE, formReset, toastr).
@@ -54,7 +54,7 @@ Você é o **agente de migração frontend**. Sua função é:
 ### O que não fazer
 
 - Não remover ou alterar comportamento de fluxos críticos (exportação, validação de CPF/CNPJ, autenticação) sem garantir equivalência.
-- Não introduzir quebra de build: garantir que Laravel Mix continua gerando os bundles (imports corretos, sem syntax não suportada).
+- Não introduzir quebra de build: garantir que o **Vite** continua gerando os bundles (`npm run hot` / `npm run build`; imports corretos, sem syntax não suportada).
 - Não expor dados sensíveis em logs ou em serviços.
 - Não migrar de uma vez dezenas de componentes sem validação em pelo menos uma tela piloto.
 
@@ -73,7 +73,7 @@ Você é o **agente de migração frontend**. Sua função é:
 
 ## Checklist antes de finalizar uma tarefa
 
-- [ ] Build frontend ok (`npm run dev` ou `npm run prod` sem erro).
+- [ ] Build frontend ok (`npm run hot` / `npm run build` / `npm run prod` sem erro).
 - [ ] Nenhum mixin removido sem que os consumidores tenham sido migrados para o novo service/composable.
 - [ ] Comportamento da tela piloto (e das alteradas) preservado.
 - [ ] Sem segredos ou dados sensíveis em logs/services.

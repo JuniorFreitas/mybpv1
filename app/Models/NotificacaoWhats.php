@@ -74,8 +74,8 @@ class NotificacaoWhats extends Model
     public static function sendNotificacaoAptoAdmissao($dados = [], $msg = null)
     {
         $whatsMsg = new \MasterTag\ZapMEApi();
-        $whatsMsg->api = env('API_ZAPME');
-        $whatsMsg->secret = env('SECRET_ZAPME');
+        $whatsMsg->api = config('services.zapme.api');
+        $whatsMsg->secret = config('services.zapme.secret');
         $whatsMsg->method = 'sendmessage';
 
         $whatsMsg->phone = $dados['fone'];

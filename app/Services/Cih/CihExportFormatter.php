@@ -3,6 +3,7 @@
 namespace App\Services\Cih;
 
 use App\Models\Cih;
+use App\Support\ExportDateBr;
 
 class CihExportFormatter
 {
@@ -125,17 +126,17 @@ class CihExportFormatter
         }
 
         return array_merge($row, [
-            $this->cleanText($cih->data_lancamento),
+            $this->cleanText(ExportDateBr::only($cih->data_lancamento)),
             $this->cleanText($cih->data_iso_lancamento),
             $this->cleanText($cih->Tag?->label ?? $cih->outra_tag ?? ''),
             $this->cleanText($cih->ResponsavelLancamento?->nome ?? ''),
-            $this->cleanText($cih->data_criacao),
+            $this->cleanText(ExportDateBr::only($cih->data_criacao)),
             $this->cleanText($cih->acao),
             $this->cleanText($cih->status ?? 'aguardando'),
-            $this->cleanText($cih->data_aprovacao),
+            $this->cleanText(ExportDateBr::only($cih->data_aprovacao)),
             $this->cleanText($cih->ResponsavelAprovacao?->nome ?? ''),
             $this->cleanText($cih->resposta_rh ?? ''),
-            $this->cleanText($cih->data_aprovacao_rh),
+            $this->cleanText(ExportDateBr::only($cih->data_aprovacao_rh)),
             $this->cleanText($cih->RhAprovacao?->nome ?? ''),
         ]);
     }
@@ -156,19 +157,19 @@ class CihExportFormatter
         }
 
         return array_merge($row, [
-            $this->cleanText($cih->data_lancamento),
+            $this->cleanText(ExportDateBr::only($cih->data_lancamento)),
             $this->cleanText($cih->data_iso_lancamento),
             $this->cleanText($cih->Tag?->label ?? $cih->outra_tag ?? ''),
             $this->cleanText($cih->ResponsavelLancamento?->nome ?? ''),
-            $this->cleanText($cih->data_criacao),
+            $this->cleanText(ExportDateBr::only($cih->data_criacao)),
             $this->cleanText($cih->data_iso_criacao),
             $this->cleanText($cih->acao),
             $this->cleanText($cih->status ?? 'aguardando'),
-            $this->cleanText($cih->data_aprovacao),
+            $this->cleanText(ExportDateBr::only($cih->data_aprovacao)),
             $this->cleanText($cih->data_iso_aprovacao_gestor),
             $this->cleanText($cih->ResponsavelAprovacao?->nome ?? ''),
             $this->cleanText($cih->resposta_rh ?? ''),
-            $this->cleanText($cih->data_aprovacao_rh),
+            $this->cleanText(ExportDateBr::only($cih->data_aprovacao_rh)),
             $this->cleanText($cih->data_iso_aprovacao_rh),
             $this->cleanText($cih->RhAprovacao?->nome ?? ''),
         ]);

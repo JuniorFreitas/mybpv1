@@ -134,7 +134,7 @@ class CartaOfertaInternaService
     {
         $apelido = $carta->empresa->apelido ?? '';
         $publicId = $carta->public_id ?: $carta->token;
-        $link = rtrim((string) env('APP_URL'), '/') . "/{$apelido}/carta-oferta/{$publicId}";
+        $link = rtrim((string) config('app.url'), '/') . "/{$apelido}/carta-oferta/{$publicId}";
 
         if (Sistema::assinaturaDigitalHabilitada($empresaId)) {
             try {
@@ -173,7 +173,7 @@ class CartaOfertaInternaService
             )
         ) {
             $tel = $telefone->sonumero;
-            $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+            $ambiente = (string) config('app.ambiente', 'local');
             if ($ambiente != 'prod') {
                 $zapTelAtivo = DB::table('zap_numeros')->where('ativo', true)->first();
                 $tel = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';

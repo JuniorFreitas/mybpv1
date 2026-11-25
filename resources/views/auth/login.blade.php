@@ -468,7 +468,7 @@
                 @endif
 
                 <div class="form-group login-actions">
-                    <button data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}" data-callback="onSubmit"
+                    <button data-sitekey="{{ config('services.recaptcha.site_key') }}" data-callback="onSubmit"
                             type="submit" class="btn btn-primary btn-block g-recaptcha">
                         Entrar no sistema
                     </button>

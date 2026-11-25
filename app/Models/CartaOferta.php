@@ -212,7 +212,7 @@ class CartaOferta extends Model
 
     public static function checklistArquivo($empresa_apelido): string
     {
-        return rtrim((string) env('AWS_URL'), '/') . '/' . self::checklistStorageKey($empresa_apelido);
+        return rtrim((string) config('filesystems.aws_url'), '/') . '/' . self::checklistStorageKey($empresa_apelido);
     }
 
     public static function checklistStorageKey(string $empresaApelido): string

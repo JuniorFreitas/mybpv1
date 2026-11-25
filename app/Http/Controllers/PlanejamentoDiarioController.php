@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StorePlanejamentoDiarioRequest;
+use App\Http\Requests\Operacional\UpdatePlanejamentoDiarioRequest;
 use App\Models\AtaReuniao;
 use App\Models\PlanejamentoDiario;
 use App\Models\PlanejamentoDiarioTarefas;
@@ -38,47 +40,33 @@ class PlanejamentoDiarioController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePlanejamentoDiarioRequest $request)
     {
         $this->authorize('administracao_planejamentodiario');
         $dados = $request->input();
         $dados['user_id'] = auth()->user()->id;
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'tarefas' => 'required',
-                'data' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Planejamento Diário',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
+            $id = PlanejamentoDiario::create($dados)->id;
 
-                $id = PlanejamentoDiario::create($dados)->id;
-
-                foreach ($dados['tarefas'] as $t) {
-                    $ta = [
-                        'planejamento_id' => $id,
-                        'tarefa' => $t['tarefa'],
-                        'status' => $t['status'],
-                    ];
-                    PlanejamentoDiarioTarefas::create($ta);
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE PLANEJAMENTO DIARIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} - Usuario ".auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            foreach ($dados['tarefas'] as $t) {
+                $ta = [
+                    'planejamento_id' => $id,
+                    'tarefa' => $t['tarefa'],
+                    'status' => $t['status'],
+                ];
+                PlanejamentoDiarioTarefas::create($ta);
             }
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE PLANEJAMENTO DIARIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} - Usuario ".auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -111,40 +99,27 @@ class PlanejamentoDiarioController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePlanejamentoDiarioRequest $request, $id)
     {
         $this->authorize('administracao_planejamentodiario');
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'tarefas' => 'required',
-                'data' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Planejamento Diário',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                foreach ($dados['tarefas'] as $t) {
-                    $pdt = PlanejamentoDiarioTarefas::where('id', $t['id'])->where('planejamento_id', $id)->first();
-                    $pdt->update(['status' => $t['status']]);
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE PLANEJAMENTO DIARIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            foreach ($dados['tarefas'] as $t) {
+                $pdt = PlanejamentoDiarioTarefas::where('id', $t['id'])->where('planejamento_id', $id)->first();
+                $pdt->update(['status' => $t['status']]);
             }
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE PLANEJAMENTO DIARIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+            //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

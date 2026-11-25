@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreBeneficioFeedbackRequest;
+use App\Http\Requests\Cadastros\StoreBeneficioRequest;
+use App\Http\Requests\Cadastros\StoreTipoBeneficioRequest;
+use App\Http\Requests\Cadastros\UpdateBeneficioRequest;
+use App\Http\Requests\Cadastros\UpdateTipoBeneficioRequest;
 use App\Models\Beneficio;
 use App\Models\BeneficioFeedback;
 use App\Models\Cliente;
@@ -39,64 +44,30 @@ class BeneficioController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreBeneficioRequest $request)
     {
-        $this->authorize('cadastro_beneficio_insert');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'tipobeneficio_id' => 'required',
-                'valor' => 'required',
-                'aplicacao' => 'required',
-                'periodicidade' => 'required',
-                'valor_descontado' => 'required',
-                'opcao_desconto' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Benefício',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                Beneficio::create($dados);
+            Beneficio::create($dados);
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE BENEFICIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . \auth()->user()->nome;
-                \Log::debug($msg);
-                //return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE BENEFICIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . \auth()->user()->nome;
+            \Log::debug($msg);
+            //return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
-    public function cadastroTipo(Request $request)
+    public function cadastroTipo(StoreTipoBeneficioRequest $request)
     {
-        $this->authorize('cadastro_beneficio_insert');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required|min:1',
-                'ativo' => 'required|boolean'
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Tipo de Benefício',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            TipoBeneficio::create($dados);
-            return response()->json([], 201);
-        }
+        TipoBeneficio::create($request->validated());
+        return response()->json([], 201);
     }
 
     /**
@@ -128,42 +99,23 @@ class BeneficioController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, Beneficio $beneficio)
+    public function update(UpdateBeneficioRequest $request, Beneficio $beneficio)
     {
-        $this->authorize('cadastro_beneficio_update');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'tipobeneficio_id' => 'required',
-                'valor' => 'required',
-                'aplicacao' => 'required',
-                'periodicidade' => 'required',
-                'valor_descontado' => 'required',
-                'opcao_desconto' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Editar Benefício',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                $beneficio->update($dados);
+            $beneficio->update($dados);
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE BENEFICIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                //return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE BENEFICIO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            //return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -241,35 +193,20 @@ class BeneficioController extends Controller
 
     }
 
-    public function storeBeneficio(Request $request, $feedback)
+    public function storeBeneficio(StoreBeneficioFeedbackRequest $request, $feedback)
     {
-        $dados = $request->input();
+        try {
+            DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'feedback_id' => 'required',
-            'beneficio_id' => 'required'
-        ]);
+            BeneficioFeedback::create($request->validated());
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar as Notas',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-
-                BeneficioFeedback::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 
@@ -292,36 +229,18 @@ class BeneficioController extends Controller
         return $tipobeneficio;
     }
 
-    public function updateTipo(Request $request, TipoBeneficio $tipobeneficio)
+    public function updateTipo(UpdateTipoBeneficioRequest $request, TipoBeneficio $tipobeneficio)
     {
-        $this->authorize('cadastro_beneficio_update');
-        $dados = $request->input();
-
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
-            'ativo' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        try {
+            DB::beginTransaction();
+            $tipobeneficio->update($request->validated());
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'msg' => 'Erro ao atualizar Tipo de Benefício',
-                'erros' => $dadosValidados->errors()
+                'msg' => $e->getMessage(),
             ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-                $tipobeneficio->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
         }
     }
 

@@ -56,6 +56,12 @@ return [
 
     'asset_url' => env('ASSET_URL', null),
 
+    /** Ambiente operacional legado (prod|local|homol). Preferir APP_ENV quando possível. */
+    'ambiente' => env('AMBIENTE', env('APP_ENV', 'local')),
+
+    /** Usado para forceScheme HTTPS (legado MIX_/VITE_AMBIENTE). */
+    'vite_ambiente' => env('VITE_AMBIENTE', env('MIX_AMBIENTE', env('APP_ENV', 'local'))),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

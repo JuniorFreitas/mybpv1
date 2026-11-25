@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Site\StoreTestemunhalRequest;
+use App\Http\Requests\Site\UpdateTestemunhalRequest;
 use App\Models\Arquivo;
 use App\Models\Testemunhal;
 use Illuminate\Http\Request;
@@ -34,46 +36,25 @@ class TestemunhalController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreTestemunhalRequest $request)
     {
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
-            'texto' => 'required',
-        ]);
+        $dados['texto'] = html_entity_decode($dados['texto']);
+        $dados['texto'] = \App\Support\SafeHtmlSanitizer::sanitize($dados['texto']);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Depoimento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            if (!isset($dados['anexo'])) {
-                return response()->json([
-                    'msg' => 'Faça o upload de uma imagem',
-                    'erros' => $dadosValidados->errors()
-                ], 400);
+        $testemunhal = Testemunhal::create($dados);
+        foreach ($dados['anexo'] as $index => $anexo) {
+            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+            if ($arquivo) {
+                $arquivo->temporario = false;
+                $arquivo->chave = '';
+                $arquivo->save();
+                $testemunhal->Anexo()->attach($arquivo->id);
             }
-
-            $dados['texto'] = html_entity_decode($dados['texto']);
-            $dados['texto'] = \App\Support\SafeHtmlSanitizer::sanitize($dados['texto']);
-
-            $testemunhal = Testemunhal::create($dados);
-            foreach ($dados['anexo'] as $index => $anexo) {
-                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                if ($arquivo) {
-                    $arquivo->temporario = false;
-                    $arquivo->chave = '';
-                    $arquivo->save();
-                    $testemunhal->Anexo()->attach($arquivo->id);
-                }
-            }
-
-            return response()->json([], 201);
         }
+
+        return response()->json([], 201);
     }
 
     /**
@@ -105,55 +86,39 @@ class TestemunhalController extends Controller
      * @param \App\Models\Testemunhal $testemunhal
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Testemunhal $testemunhal)
+    public function update(UpdateTestemunhalRequest $request, Testemunhal $testemunhal)
     {
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
-            'texto' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Depoimento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-
-            if (isset($dados['anexoDel'])) {
-                foreach ($dados['anexoDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
-                    $arquivo->excluir();
-                }
+        if (isset($dados['anexoDel'])) {
+            foreach ($dados['anexoDel'] as $id_anexo) {
+                $arquivo = Arquivo::find($id_anexo);
+                $arquivo->excluir();
             }
-
-            if (isset($dados['anexo'])) {
-                foreach ($dados['anexo'] as $index => $anexo) {
-                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                    if ($anexo['chave'] == null) {
-                        Arquivo::whereId($anexo['id'])->update([
-                            'nome' => $anexo['nome'],
-                        ]);
-                    } else {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $testemunhal->Anexo()->attach($arquivo->id);
-                        }
-                    }
-
-                }
-            }
-
-            $testemunhal->update($dados);
-            return response()->json([], 201);
-
         }
+
+        if (isset($dados['anexo'])) {
+            foreach ($dados['anexo'] as $index => $anexo) {
+                //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                if ($anexo['chave'] == null) {
+                    Arquivo::whereId($anexo['id'])->update([
+                        'nome' => $anexo['nome'],
+                    ]);
+                } else {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $testemunhal->Anexo()->attach($arquivo->id);
+                    }
+                }
+
+            }
+        }
+
+        $testemunhal->update($dados);
+        return response()->json([], 201);
     }
 
     /**

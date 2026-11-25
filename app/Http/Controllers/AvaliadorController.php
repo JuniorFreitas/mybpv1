@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\UpdateAvaliadorRequest;
 use App\Models\Admissao;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoFeedback;
@@ -74,25 +75,10 @@ class AvaliadorController extends Controller
      * @param \App\Models\AvaliacaoFeedback $avaliador
      * @return JsonResponse
      */
-    public function update(Request $request, AvaliacaoFeedback $avaliador)
+    public function update(UpdateAvaliadorRequest $request, AvaliacaoFeedback $avaliador)
     {
         $this->authorize('cadastro_avaliacao_vincular_avaliadores');
         $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'tipo_frequencia' => 'required|min:1',
-            'limite_tolerancia' => 'required|numeric|min:1',
-            'tempo_limite_falta' => 'required|numeric|min:1',
-            'tempo_limite_saida' => 'required|numeric|min:1',
-            'dia_nova_frequencia' => 'required|numeric|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar as configuraçôes da empresa',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();

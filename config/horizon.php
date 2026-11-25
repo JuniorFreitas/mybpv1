@@ -178,9 +178,10 @@ return [
     ],
 
     'environments' => [
+        // PERF-MEM-001: container web ~700MB — 10×128MB estoura hard limit; 2 réplicas × 3 = 6 workers no cluster.
         'production' => [
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 3,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StoreAvaliacaoAnualFeedbackRequest;
 use App\Models\AvaliacaoAnualFeedback;
 use App\Models\AvaliacaoAnualFeedbackQuantidade;
 use App\Models\Topicos;
@@ -19,55 +20,43 @@ class AvaliacaoAnualFeedbackController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreAvaliacaoAnualFeedbackRequest $request)
     {
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'gestor_imediato' => 'required'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar as Notas',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            $qntAvaliacao = AvaliacaoAnualFeedbackQuantidade::whereFeedbackId($dados['feedback_id'])->count();
 
-                $qntAvaliacao = AvaliacaoAnualFeedbackQuantidade::whereFeedbackId($dados['feedback_id'])->count();
+            $qntAvaliacao += 1;
 
-                $qntAvaliacao += 1;
+            $info = [
+                'gestor_id' => auth()->user()->id,
+                'gestor_imediato' => $dados['gestor_imediato'],
+                'observacao' => $dados['observacao'],
+                'feedback_id' => $dados['feedback_id'],
+                'quantidade_avaliacao' => $qntAvaliacao,
+            ];
+            AvaliacaoAnualFeedbackQuantidade::create($info);
 
-                $info = [
-                    'gestor_id' => auth()->user()->id,
-                    'gestor_imediato' => $dados['gestor_imediato'],
-                    'observacao' => $dados['observacao'],
-                    'feedback_id' => $dados['feedback_id'],
-                    'quantidade_avaliacao' => $qntAvaliacao,
-                ];
-                AvaliacaoAnualFeedbackQuantidade::create($info);
-
-                foreach ($dados['topicos'] as $topico) {
-                    foreach ($topico['perguntas'] as $form) {
-                        $formulario = [];
-                        $formulario['feedback_id'] = $dados['feedback_id'];
-                        $formulario['pergunta_id'] = $form['id'];
-                        $formulario['nota'] = $form['nota'];
-                        $formulario['quantidade_avaliacao'] = $qntAvaliacao;
-                        AvaliacaoAnualFeedback::create($formulario);
-                    }
+            foreach ($dados['topicos'] as $topico) {
+                foreach ($topico['perguntas'] as $form) {
+                    $formulario = [];
+                    $formulario['feedback_id'] = $dados['feedback_id'];
+                    $formulario['pergunta_id'] = $form['id'];
+                    $formulario['nota'] = $form['nota'];
+                    $formulario['quantidade_avaliacao'] = $qntAvaliacao;
+                    AvaliacaoAnualFeedback::create($formulario);
                 }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
             }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE AVALIACAO NOVENTA FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

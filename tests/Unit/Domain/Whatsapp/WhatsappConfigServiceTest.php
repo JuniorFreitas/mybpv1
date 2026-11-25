@@ -5,7 +5,9 @@ namespace Tests\Unit\Domain\Whatsapp;
 use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
 use App\Models\EmpresaWhatsappConfig;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -114,5 +116,32 @@ class WhatsappConfigServiceTest extends TestCase
                 "Módulo {$outro} deveria permanecer habilitado",
             );
         }
+    }
+
+    public function testEnsureConfigMaterializadaCriaJsonPadrao(): void
+    {
+        config(['activitylog.enabled' => false]);
+        Schema::dropIfExists('empresa_whatsapp_configs');
+        Schema::create('empresa_whatsapp_configs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('empresa_id')->unique();
+            $table->string('nome_exibicao')->nullable();
+            $table->string('telefone_contato')->nullable();
+            $table->text('endereco_completo')->nullable();
+            $table->text('texto_assinatura')->nullable();
+            $table->json('modulos_habilitados')->nullable();
+            $table->timestamps();
+        });
+
+        $config = $this->service->ensureConfigMaterializada(55);
+
+        $this->assertTrue($config->exists);
+        $this->assertSame(55, (int) $config->empresa_id);
+        $this->assertIsArray($config->modulos_habilitados);
+        $this->assertNotEmpty($config->modulos_habilitados);
+        $this->assertTrue($config->modulos_habilitados['Recrutamento'] ?? false);
+
+        $mesmo = $this->service->ensureConfigMaterializada(55);
+        $this->assertSame($config->id, $mesmo->id);
     }
 }

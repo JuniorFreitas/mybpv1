@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\entrevistaRhExport;
 use App\Exports\Entrevistas\parecerRhExport;
+use App\Http\Requests\Entrevista\StoreEntrevistaRhClienteRequest;
+use App\Http\Requests\Entrevista\UpdateEntrevistaRhClienteRequest;
 use App\Jobs\JobExportaExcel;
 use App\Models\Curriculo;
 use App\Models\EntrevistaRh;
@@ -45,53 +47,25 @@ class EntrevistaRhClienteController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreEntrevistaRhClienteRequest $request)
     {
 //        $this->authorize('entrevista_parecer_rh_insert');
         $dados = $request->input();
 
+        try {
+            DB::beginTransaction();
+            $feedback = FeedbackCurriculo::find($dados['id']);
+            $dados['parecer_rh']['entrevista_rh']['curriculo_id'] = $feedback->curriculo_id;
+            $dados['parecer_rh']['entrevista_rh']['feedback_id'] = $feedback->id;
+            $feedback->parecerRh->entrevistaRh()->create($dados['parecer_rh']['entrevista_rh']);
+            DB::commit();
+            return response()->json([], 201);
 
-//        if ($dadosRh['tipo_entrevista'] == 'Fixo') {
-//            $dadosValidados = \Validator::make($dados, [
-//                'dados.parecer_rh.destro' => 'required',
-//                'dados.parecer_rh.rota_bairro' => 'required',
-//                'dados.parecer_rh.mora_com_quem' => 'required',
-//                'dados.parecer_rh.grau_instrucao' => 'required',
-//                'dados.parecer_rh.situacao_saude' => 'required',
-//                'dados.parecer_rh.comportamento_seguro' => 'required',
-//                'dados.parecer_rh.energia_para_trabalho' => 'required',
-//                'dados.parecer_rh.postura' => 'required',
-//
-//            ]);
-//        }
-
-        $dadosValidados = \Validator::make($dados, [
-//            'curriculo.municipio_id' => 'required',
-//            'cliente_id' => 'required',
-//            'vaga_id' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao confirmar Parecer',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $feedback = FeedbackCurriculo::find($dados['id']);
-                $dados['parecer_rh']['entrevista_rh']['curriculo_id'] = $feedback->curriculo_id;
-                $dados['parecer_rh']['entrevista_rh']['feedback_id'] = $feedback->id;
-                $feedback->parecerRh->entrevistaRh()->create($dados['parecer_rh']['entrevista_rh']);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH STORE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error PARECER RH STORE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -155,35 +129,22 @@ class EntrevistaRhClienteController extends Controller
      * @param \App\Models\ParecerRh $parecerRh
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EntrevistaRh $parecerRh)
+    public function update(UpdateEntrevistaRhClienteRequest $request, EntrevistaRh $parecerRh)
     {
 //        $this->authorize('entrevista_parecer_rh_update');
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-//            'curriculo.municipio_id' => 'required',
-//            'cliente_id' => 'required',
-//            'vaga_id' => 'required',
-        ]);
+        try {
+            DB::beginTransaction();
+            $parecerRh->update($dados);
+            DB::commit();
+            return response()->json([], 201);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar a Entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $parecerRh->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error PARECER RH UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

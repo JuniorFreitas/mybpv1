@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CategoriaPlanoConta;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-
 class CategoriaPlanoContaController extends Controller
 {
     /**
@@ -34,29 +32,11 @@ class CategoriaPlanoContaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Financeiro\StoreCategoriaPlanoContaRequest $request)
     {
         $this->authorize('financeiro_classificacao-plano-conta_insert');
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:categoria_plano_contas,descricao',
-            'descricao' => ['required','min:3',
-                Rule::unique('categoria_plano_contas')->where(function ($query) use ($dados) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id);
-                })],
-            'ativo' => 'required|boolean',
-
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar uma nova classificação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $categoria = CategoriaPlanoConta::create($dados);
-            return response()->json([], 201);
-        }
+        CategoriaPlanoConta::create($request->validated());
+        return response()->json([], 201);
     }
 
     /**
@@ -88,29 +68,11 @@ class CategoriaPlanoContaController extends Controller
      * @param  \App\Models\CategoriaPlanoConta  $categoria
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, CategoriaPlanoConta $categoria)
+    public function update(\App\Http\Requests\Financeiro\UpdateCategoriaPlanoContaRequest $request, CategoriaPlanoConta $categoria)
     {
         $this->authorize('financeiro_classificacao-plano-conta_update');
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:categoria_plano_contas,descricao,' . $categoria->id,
-            'descricao' => ['required','min:3',
-                Rule::unique('categoria_plano_contas')->where(function ($query) use ($dados,$categoria) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id)->whereNotIn('id',[$categoria->id]);
-                })],
-            'ativo' => 'required|boolean'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a classificação de plano de conta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $categoria->update($dados);
-
-            return response()->json([], 201);
-        }
+        $categoria->update($request->validated());
+        return response()->json([], 201);
     }
 
     /**

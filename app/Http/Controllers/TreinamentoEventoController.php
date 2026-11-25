@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Treinamentos\StoreTreinamentoEventoRequest;
+use App\Http\Requests\Treinamentos\UpdateTreinamentoEventoRequest;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
@@ -43,62 +45,48 @@ class TreinamentoEventoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreTreinamentoEventoRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->validated() + $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'data_inicio' => 'required',
-            'data_fim' => 'required',
-            'empresa_treinamento_id' => 'required',
-            'treinamento_sgi_id' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                //todo Verifica se ja existe a pessoa se existir so da um increment
-                DB::beginTransaction();
-                $dados['cliente_id'] = 1;
-                $evento = TreinamentoEvento::create($dados);
-                if (isset($dados['anexosDel'])) {
-                    foreach ($dados['anexosDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->excluir();
-                    }
+        try {
+            //todo Verifica se ja existe a pessoa se existir so da um increment
+            DB::beginTransaction();
+            $dados['cliente_id'] = 1;
+            $evento = TreinamentoEvento::create($dados);
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
                 }
-                // inseri uma nova foto de anexo
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $evento->Anexos()->attach($arquivo->id);
-                        }
-                    }
-                }
-                foreach ($dados['instrutores_evento'] as $instrutor) {
-                    $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
-                }
-                foreach ($dados['pessoas_evento'] as $pessoa) {
-                    $nota = isset($pessoa['nota']) ? $pessoa['nota'] : null;
-                    $pessoaEmpresa = PessoasEmpresa::create($pessoa);
-                    $evento->PessoasEvento()->attach($pessoaEmpresa->id, ['nota' => $nota]);
-                }
-                DB::commit();
-                return response()->json([$evento], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE FREQUÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            // inseri uma nova foto de anexo
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $evento->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            foreach ($dados['instrutores_evento'] as $instrutor) {
+                $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
+            }
+            foreach ($dados['pessoas_evento'] as $pessoa) {
+                $nota = isset($pessoa['nota']) ? $pessoa['nota'] : null;
+                $pessoaEmpresa = PessoasEmpresa::create($pessoa);
+                $evento->PessoasEvento()->attach($pessoaEmpresa->id, ['nota' => $nota]);
+            }
+            DB::commit();
+            return response()->json([$evento], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE FREQUÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -151,78 +139,63 @@ class TreinamentoEventoController extends Controller
      * @param \App\Models\TreinamentoEvento $treinamento
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Clientes $cliente_id, TreinamentoEvento $treinamento)
+    public function update(UpdateTreinamentoEventoRequest $request, Clientes $cliente_id, TreinamentoEvento $treinamento)
     {
         $evento = $treinamento;
-        $dados = $request->input();
+        $dados = $request->validated() + $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'data_inicio' => 'required',
-            'data_fim' => 'required',
-            'empresa_treinamento_id' => 'required',
-            'treinamento_sgi_id' => 'required',
-        ]);
+        try {
+            //todo Verifica se ja existe a pessoa se existir so da um increment
+            DB::beginTransaction();
+            $dados['cliente_id'] = 1;
+            $evento->update($dados);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                //todo Verifica se ja existe a pessoa se existir so da um increment
-                DB::beginTransaction();
-                $dados['cliente_id'] = 1;
-                $evento->update($dados);
+            //apagando os pivot para poder criar novo
+            $evento->InstrutoresEvento()->detach();
+            $evento->PessoasEvento()->detach();
 
-                //apagando os pivot para poder criar novo
-                $evento->InstrutoresEvento()->detach();
-                $evento->PessoasEvento()->detach();
-
-                if (isset($dados['anexosDel'])) {
-                    foreach ($dados['anexosDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->excluir();
-                    }
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
                 }
-                // inseri uma nova foto de anexo
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $evento->Anexos()->attach($arquivo->id);
-                        }
-                    }
-                }
-
-                foreach ($dados['instrutores_evento'] as $instrutor) {
-                    if (isset($instrutor['novo'])) {
-                        $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
-                    } else {
-                        $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
-                    }
-                }
-                foreach ($dados['pessoas_evento'] as $pessoa) {
-                    $nota = isset($pessoa['nota']) ? $pessoa['nota'] : null;
-                    if (isset($pessoa['novo'])) {
-                        $pessoaEmpresa = PessoasEmpresa::create($pessoa);
-                        $evento->PessoasEvento()->attach($pessoaEmpresa->id, ['nota' => $nota]);
-                    } else {
-                        $evento->PessoasEvento()->attach($pessoa['id'], ['nota' => $nota]);
-                    }
-                }
-                DB::commit();
-                return response()->json([$evento], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE FREQUÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            // inseri uma nova foto de anexo
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $evento->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
+            foreach ($dados['instrutores_evento'] as $instrutor) {
+                if (isset($instrutor['novo'])) {
+                    $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
+                } else {
+                    $evento->InstrutoresEvento()->attach($instrutor['instrutor_id']);
+                }
+            }
+            foreach ($dados['pessoas_evento'] as $pessoa) {
+                $nota = isset($pessoa['nota']) ? $pessoa['nota'] : null;
+                if (isset($pessoa['novo'])) {
+                    $pessoaEmpresa = PessoasEmpresa::create($pessoa);
+                    $evento->PessoasEvento()->attach($pessoaEmpresa->id, ['nota' => $nota]);
+                } else {
+                    $evento->PessoasEvento()->attach($pessoa['id'], ['nota' => $nota]);
+                }
+            }
+            DB::commit();
+            return response()->json([$evento], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE FREQUÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

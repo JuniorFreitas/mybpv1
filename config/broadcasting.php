@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', env('BROADCAST_DRIVER', 'null')),
+    // FPM clear_env pode injetar BROADCAST_CONNECTION="" — string vazia não deve
+    // bloquear o fallback para BROADCAST_DRIVER (env() só usa default se a chave estiver ausente).
+    'default' => env('BROADCAST_CONNECTION') ?: env('BROADCAST_DRIVER') ?: 'null',
 
     /*
     |--------------------------------------------------------------------------

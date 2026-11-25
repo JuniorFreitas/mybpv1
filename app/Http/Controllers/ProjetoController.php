@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreProjetoRequest;
+use App\Http\Requests\Cadastros\UpdateProjetoRequest;
 use App\Models\Projeto;
 use App\Models\Sistema;
 use App\Models\User;
@@ -9,7 +11,6 @@ use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use DB;
-use Illuminate\Validation\Rule;
 
 class ProjetoController extends Controller
 {
@@ -40,31 +41,14 @@ class ProjetoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreProjetoRequest $request)
     {
-        $this->authorize('cadastro_projetos_insert');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereNome($dados['nome']);
-        });
+        try {
+            DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => ['required', $regra],
-            'qnt_total' => 'required|numeric',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Projeto',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-
-                $projeto = Projeto::create($dados);
+            $projeto = Projeto::create($dados);
 
                 if (isset($dados['vagas_projeto'])) {
                     foreach ($dados['vagas_projeto'] as $vaga_projeto) {
@@ -82,18 +66,17 @@ class ProjetoController extends Controller
                 DB::commit();
                 return response()->json([], 201);
 
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $msg = "error PROJETO STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome . ' EMPRESA - ' . auth()->user()->Empresa->razao_social;
-                \Log::debug($msg);
-                \Log::debug($e->getTraceAsString());
-                \Log::info("-------DADOS-------");
-                Sistema::telegram(print_r($dados, true));
-                \Log::info("-------FIM DE DADOS-------");
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error PROJETO STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome . ' EMPRESA - ' . auth()->user()->Empresa->razao_social;
+            \Log::debug($msg);
+            \Log::debug($e->getTraceAsString());
+            \Log::info("-------DADOS-------");
+            Sistema::telegram(print_r($dados, true));
+            \Log::info("-------FIM DE DADOS-------");
+            return response()->json([
+                'msg' => $e->getMessage(),
+            ], 400);
         }
     }
 
@@ -134,29 +117,11 @@ class ProjetoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateProjetoRequest $request, $id)
     {
-        $this->authorize('cadastro_projetos_update');
-        $dados = $request->input();
+        $dados = $request->all();
 
         $projeto = Projeto::findOrFail($id);
-
-        $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereNome($dados['nome']);
-        })->ignore($projeto->id);
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => ['required', $regra],
-            'qnt_total' => 'required|numeric|min:1',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Projeto',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
 
         if ($erroDelete = $this->validarVagasProjetoDelete($dados['vagas_projetoDelete'] ?? [], $projeto)) {
             return $erroDelete;

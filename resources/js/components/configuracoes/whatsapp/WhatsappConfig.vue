@@ -88,16 +88,19 @@
                         type="checkbox"
                         class="custom-control-input"
                         v-model="item.habilitado"
-                        :disabled="readonly"
+                        :disabled="readonly || salvandoModulos"
+                        @change="agendarAutoSaveModulos"
                     >
                     <label class="custom-control-label" :for="`mod-${slug(item.modulo)}`">
                         {{ item.modulo }}
                         <small class="text-muted d-block">{{ tiposModulo(item.tipos) }}</small>
                     </label>
                 </div>
-                <button v-if="!readonly" class="btn btn-success btn-sm mt-2" :disabled="salvando" @click="salvarModulos">
-                    <i :class="salvando ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i> Salvar notificações
-                </button>
+                <p v-if="!readonly" class="small text-muted mb-0 mt-2">
+                    <span v-if="salvandoModulos"><i class="fa fa-spinner fa-spin"></i> Salvando…</span>
+                    <span v-else-if="modulosSalvosEm">Salvo automaticamente {{ modulosSalvosEm }}</span>
+                    <span v-else>Alterações são salvas automaticamente.</span>
+                </p>
             </fieldset>
         </div>
 
@@ -196,6 +199,8 @@ export default defineComponent({
         const empresaId = toRef(props, 'empresaId')
         const loading = ref(true)
         const salvando = ref(false)
+        const salvandoModulos = ref(false)
+        const modulosSalvosEm = ref('')
         const aba = ref('contato')
         const readonly = ref(false)
         const whatsappLiberado = ref(false)
@@ -214,6 +219,8 @@ export default defineComponent({
         const modalPreview = ref(false)
         const previewTipoModal = ref('')
         const previewCorpoModal = ref(null)
+        let autoSaveModulosTimer = null
+        let autoSaveModulosSeq = 0
 
         const templateAtual = computed(() => templates.value.find((t) => t.tipo_mensagem === tipoSelecionado.value) || null)
 
@@ -275,8 +282,10 @@ export default defineComponent({
 
         const tiposModulo = (tipos) => (tipos || []).join(', ')
 
-        const salvarModulos = async () => {
-            salvando.value = true
+        const salvarModulos = async ({ silencioso = false } = {}) => {
+            if (readonly.value) return
+            const seq = ++autoSaveModulosSeq
+            salvandoModulos.value = true
             try {
                 await axios.put(`${BASE}/modulos`, {
                     modulos_habilitados: modulosHabilitados.value.map((item) => ({
@@ -284,13 +293,31 @@ export default defineComponent({
                         habilitado: !!item.habilitado,
                     })),
                 }, { params: empresaParams() })
-                await carregar()
-                alert('Notificações salvas com sucesso.')
+                if (seq !== autoSaveModulosSeq) return
+                modulosSalvosEm.value = new Date().toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                })
+                if (!silencioso) {
+                    alert('Notificações salvas com sucesso.')
+                }
             } catch (e) {
+                if (seq !== autoSaveModulosSeq) return
                 alert(e.response?.data?.message || 'Erro ao salvar notificações.')
             } finally {
-                salvando.value = false
+                if (seq === autoSaveModulosSeq) {
+                    salvandoModulos.value = false
+                }
             }
+        }
+
+        const agendarAutoSaveModulos = () => {
+            if (readonly.value) return
+            if (autoSaveModulosTimer) clearTimeout(autoSaveModulosTimer)
+            autoSaveModulosTimer = setTimeout(() => {
+                salvarModulos({ silencioso: true })
+            }, 450)
         }
 
         const salvarConfig = async () => {
@@ -350,12 +377,12 @@ export default defineComponent({
         })
 
         return {
-            loading, salvando, aba, readonly, whatsappLiberado, resolved, form, empresaId,
+            loading, salvando, salvandoModulos, modulosSalvosEm, aba, readonly, whatsappLiberado, resolved, form, empresaId,
             templates, modulosHabilitados, tipoSelecionado, corpoEdicao, maxCorpo,
             templateAtual, templatesPorModulo,
             modalPreview, previewTipoModal, previewCorpoModal,
             selecionarTemplate, inserirPlaceholder, formatPlaceholder, slug, tiposModulo,
-            salvarConfig, salvarModulos, salvarTemplate,
+            salvarConfig, salvarModulos, agendarAutoSaveModulos, salvarTemplate,
             restaurarPadrao, previewTemplateAtual,
         }
     },

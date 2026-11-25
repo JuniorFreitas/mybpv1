@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreFormaContratoDocumentoLegalRequest;
+use App\Http\Requests\Documentos\UpdateFormaContratoDocumentoLegalRequest;
 use App\Models\FormaContrato;
 use App\Models\User;
-use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class FormaContratoDocumentoLegalController extends Controller
 {
@@ -17,25 +17,10 @@ class FormaContratoDocumentoLegalController extends Controller
 
     }
 
-    public function store(Request $request)
+    public function store(StoreFormaContratoDocumentoLegalRequest $request)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $arrayValidacao = [
-            'titulo' => [
-                'required',
-                'min:3',
-                new TenantUniqueRules('documentos_legais_forma_contrato', $request->segment(5)),
-            ],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Forma Contrato',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -63,27 +48,10 @@ class FormaContratoDocumentoLegalController extends Controller
         return $formacontrato;
     }
 
-    public function update(Request $request, FormaContrato $formacontrato)
+    public function update(UpdateFormaContratoDocumentoLegalRequest $request, FormaContrato $formacontrato)
     {
-        $dados = $request->input();
-
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $arrayValidacao = [
-            'titulo' => [
-                'required',
-                'min:3',
-                new TenantUniqueRules('documentos_legais_forma_contrato', $request->segment(5)),
-            ],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Forma Contrato',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
