@@ -46,15 +46,16 @@ class NoEnvOutsideConfigTest extends TestCase
                     continue;
                 }
 
-                foreach (preg_split("/\r\n|\n|\r/", $contents) as $lineNum => $line) {
-                    $trimmed = ltrim($line);
+                $lines = preg_split("/\r\n|\n|\r/", $contents);
+                preg_match_all($pattern, $contents, $matches, PREG_OFFSET_CAPTURE);
+                foreach ($matches[0] as [, $offset]) {
+                    $lineNum = count(preg_split("/\r\n|\n|\r/", substr($contents, 0, $offset))) - 1;
+                    $trimmed = ltrim($lines[$lineNum]);
                     if ($trimmed === '' || str_starts_with($trimmed, '//') || str_starts_with($trimmed, '*') || str_starts_with($trimmed, '#')) {
                         continue;
                     }
-                    if (preg_match($pattern, $line)) {
-                        $rel = str_replace(base_path() . DIRECTORY_SEPARATOR, '', $path);
-                        $hits[] = $rel . ':' . ($lineNum + 1);
-                    }
+                    $rel = str_replace(base_path() . DIRECTORY_SEPARATOR, '', $path);
+                    $hits[] = $rel . ':' . ($lineNum + 1);
                 }
             }
         }
