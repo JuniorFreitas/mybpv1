@@ -368,6 +368,13 @@ class JobNotificacaoRecursiva implements ShouldQueue
             ]),
             'empresa_id' => $this->mudancaCargo->empresa_id,
             'has_aprovacao_extra' => (bool) $this->cacheConfig,
+            // Só exibe no e-mail os itens efetivamente alterados (mantem_* = false).
+            'alteracoes' => [
+                'centro_custo' => !(bool) $this->mudancaCargo->mantem_centro_custo,
+                'cargo' => !(bool) $this->mudancaCargo->mantem_cargo,
+                'funcao' => !(bool) $this->mudancaCargo->mantem_funcao,
+                'salario' => !(bool) $this->mudancaCargo->mantem_salario,
+            ],
         ];
 
         $bcc = array_slice($destinatarios, 1);

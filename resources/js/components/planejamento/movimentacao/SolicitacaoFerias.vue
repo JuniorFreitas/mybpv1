@@ -338,175 +338,105 @@
                         </div>
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="!form.data_aprovacao_gestor && !cadastrando">
-                        Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
-                    </div>
-
-                    <fieldset v-if="visualizar || aprovando" class="mybp-modal-secao">
-                        <legend>Aprovação Gestor</legend>
-                        <div class="row">
-                            <div v-if="!aprovando && form.gestor_aprovacao" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao_gestor }} por: {{ form.gestor_aprovacao.nome }} em {{ form.data_aprovacao_gestor }}
-                                </p>
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`ferias-status-gestor-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovando">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusGestor"
-                                            instance-id="form-ferias-status-gestor"
-                                            :input-id="`ferias-status-gestor-${hash}`"
-                                            v-model="form.status_aprovacao_gestor"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-ferias-status-gestor')"
-                                            @select="limparComboboxInvalido('ferias-status-gestor-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovando || aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_gestor"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Fluxo + decisão / histórico: sempre no final do formulário -->
+                    <fieldset
+                        v-if="modoDecisaoAprovacao || visualizar"
+                        class="mybp-modal-secao mybp-card-secao--fluxo"
+                    >
+                        <legend>Fluxo de aprovação</legend>
+                        <mybp-fluxo-aprovacao :steps="fluxoStepsModal" />
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="aprovandoExtra">
-                        Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
-                    </div>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovando && !aprovandoExtra && !aprovandoRh"
+                        titulo="Aprovação Gestor"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_gestor"
+                        :nome="form.gestor_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_gestor || ''"
+                        :input-id="`ferias-obs-gestor-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'gestor' ? erroObsAprovacao : ''"
+                        v-model="form.obs_gestor"
+                    />
 
-                    <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
-                        <div v-if="!temAprovacaoExtra" class="alert alert-info">
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoExtra && !aprovandoRh"
+                        :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_extra"
+                        :nome="form.aprovacao_extra?.nome || ''"
+                        :data="form.data_aprovacao_extra || ''"
+                        :input-id="`ferias-obs-extra-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'extra' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao_extra"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoRh"
+                        titulo="Aprovação RH"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        :input-id="`ferias-obs-rh-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'rh' ? erroObsAprovacao : ''"
+                        v-model="form.obs_rh"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao"
+                        titulo="Aprovação Gestor"
+                        :editavel="false"
+                        :status="form.status_aprovacao_gestor"
+                        :nome="form.gestor_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_gestor || ''"
+                        v-model="form.obs_gestor"
+                    />
+
+                    <template v-if="visualizar && !modoDecisaoAprovacao">
+                        <div v-if="!temAprovacaoExtra" class="alert alert-info mb-3">
                             <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
+                        <mybp-aprovacao-decisao
+                            v-if="temAprovacaoExtra"
+                            :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                            :editavel="false"
+                            :status="form.status_aprovacao_extra"
+                            :nome="form.aprovacao_extra?.nome || ''"
+                            :data="form.data_aprovacao_extra || ''"
+                            v-model="form.obs_aprovacao_extra"
+                        />
+                    </template>
 
-                        <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
-                        <div class="row" v-if="temAprovacaoExtra">
-                            <div v-if="!aprovandoExtra && form.aprovacao_extra" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}
-                                </p>
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`ferias-status-extra-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovandoExtra">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusExtra"
-                                            instance-id="form-ferias-status-extra"
-                                            :input-id="`ferias-status-extra-${hash}`"
-                                            v-model="form.status_aprovacao_extra"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovandoExtra || aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-ferias-status-extra')"
-                                            @select="limparComboboxInvalido('ferias-status-extra-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_aprovacao_extra"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
-
-                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
-                        <legend>Aprovação RH</legend>
-                        <div class="row">
-                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}
-                                </p>
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`ferias-status-rh-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusRh"
-                                            instance-id="form-ferias-status-rh"
-                                            :input-id="`ferias-status-rh-${hash}`"
-                                            v-model="form.status_aprovacao_rh"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-ferias-status-rh')"
-                                            @select="limparComboboxInvalido('ferias-status-rh-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovandoRh"
-                                        v-model="form.obs_rh"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao"
+                        titulo="Aprovação RH"
+                        :editavel="false"
+                        :status="form.status_aprovacao_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        v-model="form.obs_rh"
+                    />
                 </form>
             </template>
             <template #rodape>
                 <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="cadastrando && !preload" @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovando && !preload" @click.prevent="aprovarGestor">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
                 <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload" @click.prevent="editar">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
+                <div v-show="modoDecisaoAprovacao && !preload" class="mybp-aprovacao-acoes">
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click.prevent="decidirAprovacao('reprovado')">
+                        <i class="fas fa-times"></i> Reprovar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click.prevent="decidirAprovacao('aprovado')">
+                        <i class="fas fa-check"></i> Aprovar
+                    </button>
+                </div>
             </template>
         </modal>
 
@@ -1013,6 +943,7 @@ import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import MybpAprovacaoDecisao from '../../ui/MybpAprovacaoDecisao.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import MovimentacaoListagem from '../../../mixins/MovimentacaoListagem'
 import datepicker from '../../DateInputHtml5.vue'
@@ -1040,6 +971,8 @@ export default {
             aprovando: false,
             aprovandoExtra: false,
             aprovandoRh: false,
+            erroObsAprovacao: '',
+            erroObsAprovacaoEtapa: '',
             aprovaGestor: false,
             aprovaRh: false,
             podeAprovarExtra: false,
@@ -1177,6 +1110,7 @@ export default {
         MybpCardCampo,
         MybpFluxoAprovacao,
         MybpStatusBadge,
+        MybpAprovacaoDecisao,
         datepicker
     },
     mounted() {
@@ -1339,10 +1273,22 @@ export default {
         },
         opcoesPeriodoAquisitivo() {
             const opts = [{ value: '', label: 'Últimos 3 períodos' }]
-            ;(this.periodos || []).forEach((item) => {
+            this.periodosAquisitivosOrdenados.forEach((item) => {
                 opts.push({ value: String(item.id), label: item.label })
             })
             return opts
+        },
+        periodosAquisitivosOrdenados() {
+            return [...(this.periodos || [])]
+                .filter((item) => item != null && item.id != null && item.id !== '')
+                .sort((a, b) => {
+                    const anoA = Number(a.ano_inicial)
+                    const anoB = Number(b.ano_inicial)
+                    if (Number.isFinite(anoA) && Number.isFinite(anoB) && anoA !== anoB) {
+                        return anoA - anoB
+                    }
+                    return String(a.label || '').localeCompare(String(b.label || ''), 'pt-BR')
+                })
         },
         opcoesStatus() {
             return opcoesStatusFluxoAtual({
@@ -1371,17 +1317,31 @@ export default {
         modalCamposBloqueados() {
             return this.visualizar || this.aprovando || this.aprovandoExtra || this.aprovandoRh
         },
+        modoDecisaoAprovacao() {
+            return this.aprovando || this.aprovandoExtra || this.aprovandoRh
+        },
+        mostrarFluxoNoModal() {
+            return this.visualizar || this.modoDecisaoAprovacao
+        },
+        fluxoStepsModal() {
+            return this.fluxoStepsLista({
+                solicitante: { nome: this.form.solicitante },
+                data_solicitacao: this.form.data_solicitacao,
+                status_aprovacao_gestor: this.form.status_aprovacao_gestor,
+                gestor_aprovacao: this.form.gestor_aprovacao,
+                data_aprovacao_gestor: this.form.data_aprovacao_gestor,
+                status_aprovacao_extra: this.form.status_aprovacao_extra,
+                aprovacao_extra_nome: this.form.aprovacao_extra?.nome,
+                data_aprovacao_extra: this.form.data_aprovacao_extra,
+                status_aprovacao_rh: this.form.status_aprovacao_rh,
+                rh_aprovacao: this.form.rh_aprovacao,
+                data_aprovacao_rh: this.form.data_aprovacao_rh
+            })
+        },
         formSimNaoOpcoes() {
             return [
                 { value: '1', label: 'Sim' },
                 { value: '0', label: 'Não' }
-            ]
-        },
-        formStatusAprovacaoOpcoes() {
-            return [
-                { value: '', label: 'Selecione...' },
-                { value: 'aprovado', label: 'Aprovar' },
-                { value: 'reprovado', label: 'Reprovar' }
             ]
         },
         centroCustoSelecionado() {
@@ -1426,8 +1386,7 @@ export default {
         },
         formPeriodoAquisitivoOpcoes() {
             const opts = [{ value: '', label: 'Selecione...' }]
-            ;(this.periodos || []).forEach((item) => {
-                if (item == null || item.id == null || item.id === '') return
+            this.periodosAquisitivosOrdenados.forEach((item) => {
                 opts.push({ value: String(item.id), label: item.label || String(item.id) })
             })
             return opts
@@ -1930,6 +1889,7 @@ export default {
             this.form.id = id
 
             this.tituloJanela = `#${id}`
+            this.limparErroObsAprovacao()
 
             formReset()
             this.preload = true
@@ -1944,7 +1904,7 @@ export default {
                     Object.assign(this.form, data)
                     this.listaCentroCusto()
 
-                    this.tituloJanela = `#${id} Solicitação de férias`
+                    this.atualizarTituloModal()
 
                     if (this.form.centro_custo_id != null && this.form.centro_custo_id !== '') {
                         this.form.centro_custo_id = String(this.form.centro_custo_id)
@@ -2054,13 +2014,87 @@ export default {
             return this.validarInputsAtivosVisiveis(this.hash, { preservarIds: [dataId] })
         },
 
+        limparErroObsAprovacao() {
+            this.erroObsAprovacao = ''
+            this.erroObsAprovacaoEtapa = ''
+        },
+
+        atualizarTituloModal() {
+            const id = this.form.id
+            if (!id) {
+                this.tituloJanela = 'Solicitação de férias'
+                return
+            }
+            if (this.aprovando) {
+                this.tituloJanela = `#${id} Aprovação Gestor`
+            } else if (this.aprovandoExtra) {
+                this.tituloJanela = `#${id} ${this.nomeAprovacaoExtra || 'Aprovação Extra'}`
+            } else if (this.aprovandoRh) {
+                this.tituloJanela = `#${id} Aprovação RH`
+            } else if (this.editando) {
+                this.tituloJanela = `#${id} Editar férias`
+            } else if (this.visualizar) {
+                this.tituloJanela = `#${id} Solicitação de férias`
+            } else {
+                this.tituloJanela = `#${id} Solicitação de férias`
+            }
+        },
+
+        decidirAprovacao(status) {
+            const decisao = String(status || '').toLowerCase()
+            if (decisao !== 'aprovado' && decisao !== 'reprovado') {
+                return
+            }
+
+            let etapa = 'gestor'
+            let campoStatus = 'status_aprovacao_gestor'
+            let campoObs = 'obs_gestor'
+            if (this.aprovandoExtra) {
+                etapa = 'extra'
+                campoStatus = 'status_aprovacao_extra'
+                campoObs = 'obs_aprovacao_extra'
+            } else if (this.aprovandoRh) {
+                etapa = 'rh'
+                campoStatus = 'status_aprovacao_rh'
+                campoObs = 'obs_rh'
+            } else if (!this.aprovando) {
+                return
+            }
+
+            const obs = String(this.form[campoObs] || '').trim()
+            if (decisao === 'reprovado' && !obs) {
+                this.erroObsAprovacaoEtapa = etapa
+                this.erroObsAprovacao = 'Informe a observação para reprovar'
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Informe a observação para reprovar')
+                }
+                return
+            }
+
+            this.limparErroObsAprovacao()
+
+            if (decisao === 'reprovado') {
+                const nome = this.form.autocomplete_label_colaborador || 'este colaborador'
+                if (!window.confirm(`Confirma reprovar as férias de ${nome}?`)) {
+                    return
+                }
+            }
+
+            this.form[campoStatus] = decisao
+            if (etapa === 'gestor') {
+                this.aprovarGestor()
+            } else if (etapa === 'extra') {
+                this.aprovarExtra()
+            } else {
+                this.aprovarRh()
+            }
+        },
+
         aprovarGestor() {
-            const statusId = `ferias-status-gestor-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao_gestor, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao_gestor || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
 
@@ -2068,25 +2102,23 @@ export default {
 
             axios
                 .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovargestor`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Registro salvo com sucesso!')
+                .then(() => {
+                    const ok = this.form.status_aprovacao_gestor === 'aprovado'
+                    mostraSucesso('', ok ? 'Férias aprovadas pelo gestor.' : 'Férias reprovadas pelo gestor.')
                     this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
                     this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
-                .catch((error) => {
+                .catch(() => {
                     this.preload = false
                 })
         },
 
         aprovarExtra() {
-            const statusId = `ferias-status-extra-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao_extra || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
 
@@ -2095,41 +2127,42 @@ export default {
             axios
                 .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarextra`, this.form)
                 .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', data.msg || 'Aprovação extra registrada com sucesso!')
+                    const data = response.data
+                    const ok = this.form.status_aprovacao_extra === 'aprovado'
+                    mostraSucesso(
+                        '',
+                        data.msg || (ok ? 'Aprovação extra registrada.' : 'Reprovação extra registrada.')
+                    )
                     this.$refs[`${this.hash}`] && this.$refs[`${this.hash}`].fecharModal()
                     this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
-                    console.error('Erro ao aprovar extra:', error)
-                    let msg = error.response?.data?.msg || 'Erro ao processar aprovação'
+                    const msg = error.response?.data?.msg || 'Erro ao processar aprovação'
                     mostraErro('', msg)
                     this.preload = false
                 })
         },
 
         aprovarRh() {
-            const statusId = `ferias-status-rh-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao_rh || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
             this.preload = true
 
             axios
                 .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarrh`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Registro salvo com sucesso!')
+                .then(() => {
+                    const ok = this.form.status_aprovacao_rh === 'aprovado'
+                    mostraSucesso('', ok ? 'Férias aprovadas pelo RH.' : 'Férias reprovadas pelo RH.')
                     this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
                     this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
-                .catch((error) => {
+                .catch(() => {
                     this.preload = false
                 })
         },
@@ -2235,9 +2268,6 @@ export default {
                 'form-ferias-qnt-dias': 'comboFormQntDias',
                 'form-ferias-abono': 'comboFormAbono',
                 'form-ferias-adiantamento': 'comboFormAdiantamento',
-                'form-ferias-status-gestor': 'comboFormStatusGestor',
-                'form-ferias-status-extra': 'comboFormStatusExtra',
-                'form-ferias-status-rh': 'comboFormStatusRh'
             }
             Object.keys(mapa).forEach((id) => {
                 if (id === excetoId) return

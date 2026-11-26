@@ -66,16 +66,20 @@ class FeriasPrevistaEditPayloadMapper
     public function map(Ferias $item): array
     {
         $admissao = $item->Admissao;
-        $curriculo = $admissao?->Feedback?->Curriculo;
+        $feedback = $admissao?->Feedback;
+        $curriculo = $feedback?->Curriculo;
         $colaboradorNome = $curriculo?->nome ?? '';
         $gestorNome = $item->Gestor?->nome ?? '';
         $centroCustoId = $admissao?->centro_custo_id
             ?? $item->FeriasPrevista?->centro_custo_id;
 
+        // Alinhado ao create (Colaborador.vue tipo=ferias): colaborador_id = feedback_curriculos.id
+        $colaboradorId = $admissao?->feedback_id ?? $feedback?->id;
+
         return [
             'id' => (int) $item->id,
             'admissao_id' => $item->admissao_id,
-            'colaborador_id' => $curriculo?->id ?? '',
+            'colaborador_id' => $colaboradorId ? (int) $colaboradorId : '',
             'autocomplete_label_colaborador' => $colaboradorNome,
             'autocomplete_label_colaborador_anterior' => $colaboradorNome,
             'data_admissao' => $admissao?->data_admissao ?? '',

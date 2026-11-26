@@ -461,6 +461,7 @@ class FeriasPrevistaController extends Controller
         $periodo = PeriodoAquisitivo::query()
             ->select(['id', 'label', 'ano_inicial'])
             ->whereIn('ano_inicial', [date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3])
+            ->orderBy('ano_inicial')
             ->get();
 
         $permissoes = [
@@ -614,7 +615,9 @@ class FeriasPrevistaController extends Controller
             $newDate = new DataHora($ultimaData);
             $ultimaData = $newDate->dataCompleta();
         } else {
-            $periodo = PeriodoAquisitivo::get();
+            $periodo = PeriodoAquisitivo::query()
+                ->orderBy('ano_inicial')
+                ->get();
             $ultimaData = '';
         }
 
@@ -629,8 +632,9 @@ class FeriasPrevistaController extends Controller
 
     public function buscaPeriodosAquisitivos(Request $request)
     {
-
-        $periodo = PeriodoAquisitivo::get();
+        $periodo = PeriodoAquisitivo::query()
+            ->orderBy('ano_inicial')
+            ->get();
 
         return response()->json(['periodos' => $periodo]);
     }
