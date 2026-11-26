@@ -103,10 +103,10 @@
         <tr>
             <td align="middle">
                 @if(isset($empresa) && !empty($empresa))
-                    <img src="{{env('AWS_URL')}}/public/email_{{$empresa->apelido}}.jpg"
+                    <img src="{{config('filesystems.aws_url')}}/public/email_{{$empresa->apelido}}.jpg"
                          style="width: 100%" alt=""> <br>
                 @else
-                    <img src="{{env('AWS_URL')}}/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
+                    <img src="{{config('filesystems.aws_url')}}/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
                 @endif
             </td>
         </tr>

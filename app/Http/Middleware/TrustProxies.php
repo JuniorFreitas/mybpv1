@@ -29,8 +29,11 @@ class TrustProxies extends Middleware
     {
         // Default: redes privadas (LB/VPC). Em produção defina TRUSTED_PROXIES com CIDRs do proxy.
         // Evitar '*' — permite spoof de X-Forwarded-*.
-        $configured = env('TRUSTED_PROXIES', '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1');
-        if ($configured === null || $configured === '') {
+        $configured = (string) config(
+            'app.trusted_proxies',
+            '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1'
+        );
+        if ($configured === '') {
             $this->proxies = ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.1'];
         } elseif ($configured === '*') {
             $this->proxies = '*';

@@ -30,10 +30,10 @@
                 <tr>
                     <td style="padding: 30px 20px; text-align: center;">
                         @if(!empty($dados['empresa_apelido']))
-                            <img src="{{env('AWS_URL')}}/public/email_{{$dados['empresa_apelido']}}.jpg"
+                            <img src="{{config('filesystems.aws_url')}}/public/email_{{$dados['empresa_apelido']}}.jpg"
                                  style="width: 100%" alt=""> <br>
                         @else
-                            <img src="{{env('AWS_URL')}}/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
+                            <img src="{{config('filesystems.aws_url')}}/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
                         @endif
                         <h1 style="margin: 20px 0 10px 0; font-size: 24px; font-weight: bold;">📊 Relatório de
                             Treinamentos</h1>

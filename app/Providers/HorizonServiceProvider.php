@@ -35,7 +35,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewHorizon', function ($user) {
-            $allow = array_filter(array_map('trim', explode(',', (string) env('HORIZON_ALLOWED_LOGINS', ''))));
+            $allow = config('horizon.allowed_logins', []);
 
             return in_array($user->login, $allow, true);
         });

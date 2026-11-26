@@ -27,12 +27,12 @@ function sdd()
 }
 
 Artisan::command('mybp:dump', function () {
-    if (!filter_var(env('MYBP_DUMP_ENABLED', false), FILTER_VALIDATE_BOOLEAN)) {
+    if (!filter_var(config('app.dump_enabled', false), FILTER_VALIDATE_BOOLEAN)) {
         $this->error('mybp:dump desabilitado. Defina MYBP_DUMP_ENABLED=true e MYBP_DUMP_SSH_COMMAND apenas em ops controlado.');
         return 1;
     }
 
-    $ssh = (string) env('MYBP_DUMP_SSH_COMMAND', '');
+    $ssh = (string) config('app.dump_ssh_command', '');
     if ($ssh === '') {
         $this->error('MYBP_DUMP_SSH_COMMAND não configurado.');
         return 1;

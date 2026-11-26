@@ -32,7 +32,7 @@ class UpdateMembrosMail extends Mailable
         $this->tarefa = $dados['modelTarefa'];
 
         $this->to($this->para->login, $this->para->nome);
-        $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
+        $this->from(config('mail.from.address'), config('app.name'));
         $this->replyTo($this->para->login,$this->para->nome);
         if($this->acao == TarefaEvent::ACAO_ADD){
             $this->subject = 'Nova tarefa para você';

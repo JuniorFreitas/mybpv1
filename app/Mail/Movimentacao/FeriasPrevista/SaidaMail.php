@@ -27,7 +27,7 @@ class SaidaMail extends Mailable
         $this->subject = 'Lembrete de saída de férias';
 
         $this->to($this->dados['usuario']->login, $this->dados['usuario']->nome);
-        $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
+        $this->from(config('mail.from.address'), config('app.name'));
     }
 
     /**

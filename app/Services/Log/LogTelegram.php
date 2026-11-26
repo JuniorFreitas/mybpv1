@@ -14,7 +14,7 @@ class LogTelegram extends TelegramBotHandler
             $userAutenticado = 'USUÁRIO - ' . auth()->user()->nome . ' - Empresa ' . auth()->user()->Empresa->razao_social;
         }
 
-        $mensagem = env('APP_NAME') . " | [{$record->level->getName()}] - data: {$record->datetime->format('d/m/Y H:i:s')} - mensagem: {$record->message}";
+        $mensagem = config('app.name') . " | [{$record->level->getName()}] - data: {$record->datetime->format('d/m/Y H:i:s')} - mensagem: {$record->message}";
         if (isset($record->context['exception'])) {
             $mensagem .= " - Arquivo: {$record->context['exception']->getFile()} - Linha: {$record->context['exception']->getLine()}\n";
             $mensagem .= \Request::fullUrl() . "\n";

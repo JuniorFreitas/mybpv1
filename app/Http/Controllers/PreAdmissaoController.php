@@ -399,7 +399,7 @@ class PreAdmissaoController extends Controller
                     ->resolverPrincipalWhatsapp((int) $curriculo->id);
 
                 if ($telefonePrincipal) {
-                    $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+                    $ambiente = config('app.ambiente', 'local') == 'prod' ?: 'local';
                     if ($ambiente != 'prod') {
                         $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
                         $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';

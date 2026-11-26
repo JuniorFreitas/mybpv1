@@ -139,7 +139,7 @@ class ZapNotificacao
     {
         unset($dados['delay_segundos'], $dados['_whatsapp_meta']);
 
-        $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+        $ambiente = config('app.ambiente', 'local') == 'prod' ?: 'local';
 
         if ($ambiente != 'prod') {
             $zapTelAtivo = \DB::table('zap_numeros')->where('ativo', true)->first();

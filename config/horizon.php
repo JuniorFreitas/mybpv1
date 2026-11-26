@@ -72,6 +72,12 @@ return [
 
     'middleware' => ['web', 'auth'],
 
+    /** Logins (CSV) com Gate viewHorizon além do papel plataforma. */
+    'allowed_logins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('HORIZON_ALLOWED_LOGINS', ''))
+    ))),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Wait Time Thresholds
