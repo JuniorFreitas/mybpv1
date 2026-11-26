@@ -26,6 +26,12 @@ class AdmissaoProcessoListagemPresenter
     {
         $pg = app(AdmissaoProcessoFiltroQuery::class)->aplicar($request)->paginate($request->pages ?: 20);
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        // listaCentroCustoPorCnpj retorna Collection (ou JsonResponse em erro); normaliza para array.
+        if ($cc instanceof Collection) {
+            $cc = $cc->all();
+        } elseif (! is_array($cc)) {
+            $cc = [];
+        }
 
         $itens = $this->transformarItens(collect($pg->items()), $cc);
 
