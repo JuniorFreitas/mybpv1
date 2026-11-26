@@ -313,7 +313,7 @@
         },
         {
           "name": "ENABLE_CACHE_APP",
-          "value": "true"
+          "value": "false"
         },
         {
           "name": "ENABLE_HORIZON",
