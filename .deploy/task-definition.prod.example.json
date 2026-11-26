@@ -313,7 +313,7 @@
         },
         {
           "name": "ENABLE_CACHE_APP",
-          "value": "false"
+          "value": "true"
         },
         {
           "name": "ENABLE_HORIZON",
@@ -431,6 +431,19 @@
           "name": "SECRET_ZAPME",
           "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/SECRET_ZAPME"
         },
+        {
+          "name": "ZAPDYNAMUS_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/ZAPDYNAMUS_API_KEY"
+        },
+        {
+          "name": "ZAPDYNAMUS_BASE_URL",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/ZAPDYNAMUS_BASE_URL"
+        },
+        {
+          "name": "ZAPDYNAMUS_INSTANCIA",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/ZAPDYNAMUS_INSTANCIA"
+        },
+
         {
           "name": "BOT_ID",
           "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/BOT_ID"

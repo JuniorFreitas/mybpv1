@@ -1,39 +1,42 @@
-const Exportacao = {
-    data() {
-        return {
-            preloadExportacao: false,
-        };
-    },
-    methods: {
-        async exportaExcel() {
-            this.preloadExportacao = true;
-            mostraSucesso("Estamos gerando seu arquivo excel, assim que finalizado você será notificado.");
-            setTimeout(() => {
-                this.preloadExportacao = false;
-            }, 500);
-            try {
-                await axios.post(`${this.urlExportacao}`, this.paramsExport);
-                this.preloadExportacao = false;
-            } catch (erro) {
-                mostraErro(erro);
-                this.preloadExportacao = false;
-            }
-        },
+import exportacaoService from '../services/exportacao'
 
-        async exportaPdf() {
-            this.preloadExportacao = true;
-            mostraSucesso("Estamos gerando seu arquivo pdf, assim que finalizado você será notificado.");
-            setTimeout(() => {
-                this.preloadExportacao = false;
-            }, 500);
-            try {
-                await axios.post(`${this.urlPdf}`, this.paramsExport);
-                this.preloadExportacao = false;
-            } catch (erro) {
-                mostraErro(erro);
-                this.preloadExportacao = false;
-            }
-        },
+/**
+ * Thin wrapper: delega ao exportacaoService (FE-001 Fase 4).
+ * Telas ainda usam this.urlExportacao / this.paramsExport / this.urlPdf.
+ */
+const Exportacao = {
+  data() {
+    return {
+      preloadExportacao: false,
     }
-};
-export default Exportacao;
+  },
+  methods: {
+    async exportaExcel() {
+      this.preloadExportacao = true
+      try {
+        await exportacaoService.exportarExcel(this.urlExportacao, this.paramsExport)
+      } catch (_erro) {
+        // erro já notificado pelo service
+      } finally {
+        setTimeout(() => {
+          this.preloadExportacao = false
+        }, 500)
+      }
+    },
+
+    async exportaPdf() {
+      this.preloadExportacao = true
+      try {
+        await exportacaoService.exportarPdf(this.urlPdf, this.paramsExport)
+      } catch (_erro) {
+        // erro já notificado pelo service
+      } finally {
+        setTimeout(() => {
+          this.preloadExportacao = false
+        }, 500)
+      }
+    },
+  },
+}
+
+export default Exportacao

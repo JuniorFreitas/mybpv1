@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ponto\StorePontoEletronicoRequest;
 use App\Models\Arquivo;
 use App\Models\PeriodoPontoEletronico;
 use App\Models\PontoEletronico;
@@ -33,20 +34,7 @@ class PontoEletronicoController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'foto' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao registrar o ponto',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
+    public function store(StorePontoEletronicoRequest $request) {
 
             try {
                 // verificar tambem inicio da primeiro periodos e o fim da ultimo periodo
@@ -192,8 +180,6 @@ class PontoEletronicoController extends Controller {
 
                 return response()->json(['msg' => $exception->getMessage()], 500);
             }
-
-        }
     }
 
     /**

@@ -19,36 +19,25 @@ use MasterTag\DataHora;
 
 class AdmissoesPrevistaController extends Controller
 {
+    /** Listagem vive no hub de Movimentação (SPA). */
+    public function index()
+    {
+        return redirect()->route('g.movimentacao.index');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreAdmissoesPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario'] = $dados['salario_format'];
         $dados['user_id'] = auth()->user()->id;
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'nullable|integer',
-                'tipo_contrato' => 'required|in:' . implode(',', Admissao::TODOS_TIPOS_ADMISSAO),
-                'cargo_id' => 'required',
-                'salario_format' => 'required',
-                'nome_pessoa' => ['nullable', 'string', 'max:255'],
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Admissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $admPrevista = AdmissoesPrevista::create($dados);
@@ -120,27 +109,12 @@ class AdmissoesPrevistaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, AdmissoesPrevista $admissoesPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateAdmissoesPrevistaRequest $request, AdmissoesPrevista $admissoesPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario'] = $dados['salario_format'];
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'tipo_contrato' => 'required|in:' . implode(',', Admissao::TODOS_TIPOS_ADMISSAO),
-                'cargo_id' => 'required',
-                'salario_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Admissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $admissoesPrevista->update($dados);

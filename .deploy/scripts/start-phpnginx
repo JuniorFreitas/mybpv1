@@ -12,22 +12,66 @@ FPM_PID_FILE="/run/php-fpm/php-fpm.pid"
 FPM_SOCK="/run/php-fpm/www.sock"
 CVE_SESSION_UPLOAD_CONF="${APP_PATH}/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
 HARDEN_CONF="${APP_PATH}/.deploy/php/fpm-pool.d/zz-mybp-fpm-harden.conf"
+IS_ROOT=0
+if [ "$(id -u)" -eq 0 ]; then
+    IS_ROOT=1
+fi
 
 cd "$APP_PATH"
 
-log " -----> Info: Override php's default config..."
-if [ "${APP_ENV:-local}" = "production" ]; then
-    cp "${APP_PATH}/.deploy/php/php.ini-production" "$PHP_INI"
-else
-    cp "${APP_PATH}/.deploy/php/php.ini-development" "$PHP_INI"
-fi
+# Configs PHP/FPM já vão no build da imagem. Só sobrescreve /etc se estiver root
+# (ex.: volume montando código + override local).
+if [ "$IS_ROOT" -eq 1 ]; then
+    log " -----> Info: Override php's default config (root)..."
+    if [ "${APP_ENV:-local}" = "production" ]; then
+        cp "${APP_PATH}/.deploy/php/php.ini-production" "$PHP_INI"
+    else
+        cp "${APP_PATH}/.deploy/php/php.ini-development" "$PHP_INI"
+    fi
 
-if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
-    log " -----> Error: Missing CVE mitigation conf: ${CVE_SESSION_UPLOAD_CONF}"
-    exit 1
+    if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
+        log " -----> Error: Missing CVE mitigation conf: ${CVE_SESSION_UPLOAD_CONF}"
+        exit 1
+    fi
+    log " -----> Info: Applying PHP session.upload_progress mitigation..."
+    cp "$CVE_SESSION_UPLOAD_CONF" "${FPM_POOL_DIR}/zz-cve-2026-115560.conf"
+
+    WWW_CONF="/etc/php-fpm.d/www.conf"
+    FPM_CONF="/etc/php-fpm.conf"
+    sed -i 's/^user = apache/user = nginx/' "$WWW_CONF" || true
+    sed -i 's/^;group = apache/group = nginx/' "$WWW_CONF" || true
+    sed -i 's/^group = apache/group = nginx/' "$WWW_CONF" || true
+    sed -i 's/^php_value\[soap\.wsdl_cache_dir\].*/; php_value[soap.wsdl_cache_dir] disabled (ext-soap ausente)/' "$WWW_CONF" || true
+    if [ -f "$FPM_CONF" ] && grep -qE '^error_log\s*=' "$FPM_CONF"; then
+        sed -i 's#^error_log\s*=.*#error_log = /proc/self/fd/2#' "$FPM_CONF" || true
+    fi
+
+    if [ ! -f "$HARDEN_CONF" ]; then
+        log " -----> Error: Missing FPM harden conf: ${HARDEN_CONF}"
+        exit 1
+    fi
+    cp "$HARDEN_CONF" "${FPM_POOL_DIR}/zz-mybp-fpm-harden.conf"
+
+    mkdir -p /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache
+    chown -R nginx:nginx /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
+    chmod -R ug+rwX /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
+
+    if [ -d "${APP_PATH}/storage" ]; then
+        log " -----> Info: Fixing permissions on storage..."
+        chown -R nginx:nginx storage || true
+        chmod -R ug+rwX storage || true
+    fi
+    if [ -d "${APP_PATH}/bootstrap/cache" ]; then
+        log " -----> Info: Fixing permissions on bootstrap/cache..."
+        chown -R nginx:nginx bootstrap/cache || true
+        chmod -R ug+rwX bootstrap/cache || true
+    fi
+else
+    log " -----> Info: Running as UID $(id -u); using PHP/FPM configs baked in the image."
+    mkdir -p /run/php-fpm /tmp /var/cache/nginx \
+        "${APP_PATH}/storage/logs" \
+        "${APP_PATH}/bootstrap/cache" 2>/dev/null || true
 fi
-log " -----> Info: Applying PHP session.upload_progress mitigation..."
-cp "$CVE_SESSION_UPLOAD_CONF" "${FPM_POOL_DIR}/zz-cve-2026-115560.conf"
 
 if [ -d "${APP_PATH}/vendor" ]; then
     log " -----> Info: Running migrations..."
@@ -44,50 +88,15 @@ if [ -d "${APP_PATH}/vendor" ]; then
         log " -----> Warning: WhatsappTemplatePadraoSeeder falhou."
 
     if [ "${ENABLE_CACHE_APP:-false}" = "true" ]; then
-        log " -----> Info: Caching configuration..."
+        log " -----> Info: Caching configuration (obrigatório com FPM clear_env=yes)..."
         php artisan package:discover --ansi || true
-        php artisan config:cache || true
+        if ! php artisan config:cache; then
+            log " -----> Error: config:cache falhou; abortando start (sem cache o FPM não vê secrets)."
+            exit 1
+        fi
     fi
 else
     log " -----> Warning: Directory ${APP_PATH}/vendor does not yet exist."
-fi
-
-log " -----> Info: Hardening PHP-FPM pool (nginx + logs + timeouts)..."
-WWW_CONF="/etc/php-fpm.d/www.conf"
-FPM_CONF="/etc/php-fpm.conf"
-
-sed -i 's/^user = apache/user = nginx/' "$WWW_CONF" || true
-sed -i 's/^;group = apache/group = nginx/' "$WWW_CONF" || true
-sed -i 's/^group = apache/group = nginx/' "$WWW_CONF" || true
-
-# Base Remi define soap.wsdl_cache_dir, mas a imagem 8.5 não carrega ext-soap
-sed -i 's/^php_value\[soap\.wsdl_cache_dir\].*/; php_value[soap.wsdl_cache_dir] disabled (ext-soap ausente)/' "$WWW_CONF" || true
-
-# Erros do master FPM no CloudWatch
-if [ -f "$FPM_CONF" ] && grep -qE '^error_log\s*=' "$FPM_CONF"; then
-    sed -i 's#^error_log\s*=.*#error_log = /proc/self/fd/2#' "$FPM_CONF" || true
-fi
-
-if [ ! -f "$HARDEN_CONF" ]; then
-    log " -----> Error: Missing FPM harden conf: ${HARDEN_CONF}"
-    exit 1
-fi
-cp "$HARDEN_CONF" "${FPM_POOL_DIR}/zz-mybp-fpm-harden.conf"
-
-mkdir -p /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache
-chown -R nginx:nginx /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
-chmod -R ug+rwX /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
-
-if [ -d "${APP_PATH}/storage" ]; then
-    log " -----> Info: Fixing permissions on storage..."
-    chown -R nginx:nginx storage || true
-    chmod -R ug+rwX storage || true
-fi
-
-if [ -d "${APP_PATH}/bootstrap/cache" ]; then
-    log " -----> Info: Fixing permissions on bootstrap/cache..."
-    chown -R nginx:nginx bootstrap/cache || true
-    chmod -R ug+rwX bootstrap/cache || true
 fi
 
 child_pids=()
@@ -157,12 +166,10 @@ fpm_is_alive() {
     [ -S "$FPM_SOCK" ]
 }
 
-# FPM antes do nginx — evita 502/499 no LB enquanto o socket ainda não existe
 if [ "${ENABLE_PHPFPM:-true}" = "true" ]; then
     log " -----> Info: Starting PHP-FPM..."
     mkdir -p /run/php-fpm
     rm -f "$FPM_PID_FILE" "$FPM_SOCK"
-    # -F foreground; -O força stderr mesmo sem TTY (CloudWatch)
     /usr/sbin/php-fpm -F -O --fpm-config=/etc/php-fpm.conf &
     child_pids+=($!)
     wait_for_fpm_socket "$FPM_SOCK" 50
@@ -174,6 +181,7 @@ fi
 
 if [ "${ENABLE_NGINX:-true}" = "true" ]; then
     log " -----> Info: Starting NGINX..."
+    rm -f /var/cache/nginx/nginx.pid
     nginx -t
     /usr/sbin/nginx -g 'daemon off;' &
     nginx_pid=$!
@@ -199,7 +207,6 @@ fi
 
 log " -----> Info: All services started. Supervising..."
 
-# Supervisão via pidfile/socket (FPM) e PID do nginx — sem `wait` em PID reparentado.
 while true; do
     if [ "${ENABLE_PHPFPM:-true}" = "true" ] && ! fpm_is_alive; then
         log " -----> Error: PHP-FPM saiu (pidfile/socket)."

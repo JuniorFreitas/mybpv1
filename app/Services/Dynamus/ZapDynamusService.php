@@ -14,15 +14,21 @@ class ZapDynamusService
 
     public function __construct()
     {
-        $this->instancia = 'mybp-notificacao';
-        $this->baseUrl = 'https://zapevolutionapi.dynamusti.com.br';
+        $this->instancia = (string) config('services.zapdynamus.instancia', 'mybp-notificacao');
+        $this->baseUrl = rtrim((string) config('services.zapdynamus.base_url', 'https://zapevolutionapi.dynamusti.com.br'), '/');
+
+        $apiKey = (string) config('services.zapdynamus.api_key', '');
+        if ($apiKey === '') {
+            Log::warning('ZapDynamus: ZAPDYNAMUS_API_KEY não configurada');
+        }
+
         $this->client = new Client([
             'timeout' => 30,
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'apikey' => '20c5dee2915cfa8064a635434c118a60'
-            ]
+                'apikey' => $apiKey,
+            ],
         ]);
     }
 

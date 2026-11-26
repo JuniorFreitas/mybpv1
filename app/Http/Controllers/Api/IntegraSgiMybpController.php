@@ -420,7 +420,7 @@ class IntegraSgiMybpController extends Controller
             DB::commit();
 
 
-            $link_carta_oferta = env('APP_URL')."/{$Empresa->apelido}/carta-oferta/{$dados['token']}";
+            $link_carta_oferta = config('app.url')."/{$Empresa->apelido}/carta-oferta/{$dados['token']}";
 
             JobEnvioCartaOferta::dispatch([
                 'nome' => $curriculo->nome,
@@ -438,7 +438,7 @@ class IntegraSgiMybpController extends Controller
             ) {
                 $dados['telefone'] = $telefoneWhatsapp->sonumero;
 
-                $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+                $ambiente = config('app.ambiente', 'local') == 'prod' ?: 'local';
                 if ($ambiente != 'prod') {
                     $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
                     $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';

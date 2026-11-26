@@ -70,7 +70,11 @@
                                     <td>{{ download.local }}</td>
                                     <td>{{ download.data_hora_criacao }}</td>
                                     <td>
-                                        <a :href="URL_ADMIN + '/downloads/exportacao/' + download.arquivo" class="btn btn-primary" target="_blank">
+                                        <a
+                                            :href="URL_ADMIN + '/downloads/exportacao/' + download.arquivo"
+                                            class="btn btn-primary"
+                                            :download="download.arquivo"
+                                        >
                                             <i class="fa fa-download"></i>
                                             Download
                                         </a>

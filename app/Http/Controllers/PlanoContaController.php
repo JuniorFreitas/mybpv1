@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CategoriaPlanoConta;
 use App\Models\PlanoConta;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PlanoContaController extends Controller
 {
@@ -36,30 +35,11 @@ class PlanoContaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Financeiro\StorePlanoContaRequest $request)
     {
         $this->authorize('financeiro_plano-conta_insert');
-        $dadosValidados = \Validator::make($request->input(), [
-            //'descricao' => 'required|min:3|unique:plano_contas,descricao',
-            'descricao' => ['required','min:3',
-                Rule::unique('plano_contas')->where(function ($query) use ($request) {
-                    return $query->whereDescricao($request->descricao)->whereEmpresaId(auth()->user()->empresa_id);
-                })],
-            'operacao' => 'required|string|min:1',
-            'categoria_plano_id' => 'required|numeric|min:1',
-            'ativo' => 'required|boolean',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar plano de conta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-
-            PlanoConta::create($request->input());
-            return response()->json([], 201);
-        }
+        PlanoConta::create($request->validated());
+        return response()->json([], 201);
     }
 
     /**
@@ -91,29 +71,11 @@ class PlanoContaController extends Controller
      * @param  \App\Models\PlanoConta  $planoConta
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PlanoConta $plano)
+    public function update(\App\Http\Requests\Financeiro\UpdatePlanoContaRequest $request, PlanoConta $plano)
     {
         $this->authorize('financeiro_plano-conta_update');
-
-        $dadosValidados = \Validator::make($request->input(), [
-            //'descricao' => 'required|min:3|unique:plano_contas,descricao,' . $plano->id,
-            'descricao' => ['required','min:3',
-                Rule::unique('plano_contas')->where(function ($query) use ($request,$plano) {
-                    return $query->whereDescricao($request->descricao)->whereEmpresaId(auth()->user()->empresa_id)->whereNotIn('id',[$plano->id]);
-                })],
-            'operacao' => 'required|string|min:1',
-            'categoria_plano_id' => 'required|numeric|min:1',
-            'ativo' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a plano de conta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $plano->update($request->input());
-            return response()->json([], 201);
-        }
+        $plano->update($request->validated());
+        return response()->json([], 201);
     }
 
     /**

@@ -15,7 +15,7 @@
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
                                 @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                         alt="Logo" title="Logo" style="height: 0.6cm">
                                     <br>
                                 @endif
@@ -266,7 +266,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -303,7 +303,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -379,7 +379,7 @@
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
                                 @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                         alt="Logo" title="Logo" style="height: 0.6cm">
                                     <br>
                                 @endif
@@ -619,7 +619,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -657,7 +657,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif

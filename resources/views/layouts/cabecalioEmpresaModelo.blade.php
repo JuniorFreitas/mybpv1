@@ -23,7 +23,7 @@
         <tr>
             <th style="font-weight: normal !important; padding-right: 10px; width: 60px">
                 <img
-                    src="{{env('AWS_URL')}}/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                    src="{{config('filesystems.aws_url')}}/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
                     alt="Empresa" title="Empresa" style="height: 70px; margin-top: 0px;">
                 <br>
             </th>

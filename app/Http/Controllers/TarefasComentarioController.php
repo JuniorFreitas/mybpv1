@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\ComentarioTarefaEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreTarefaComentarioRequest;
+use App\Http\Requests\Operacional\UpdateTarefaComentarioRequest;
 use App\Models\ListaTarefa;
 use App\Models\LogWeekly;
 use App\Models\Quadro;
@@ -11,7 +13,6 @@ use App\Models\Tarefa;
 use App\Models\TarefaComentario;
 use App\Services\WeeklyReport\AttachMentionedMembers;
 use App\Support\WeeklyReport\WeeklyReportEagerLoads;
-use App\Support\WeeklyReportHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
@@ -30,38 +31,18 @@ class TarefasComentarioController extends Controller
             ->paginate(WeeklyReportEagerLoads::PAGE_SIZE, ['*'], 'page', $page);
     }
 
-    public function store(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    public function store(StoreTarefaComentarioRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
-        $comentarioHtml = WeeklyReportHtml::sanitize($request->input('comentario'));
-        if (WeeklyReportHtml::isEmpty($comentarioHtml)) {
-            return response()->json([
-                'msg' => 'Informe o texto do comentário',
-                'erros' => ['comentario' => ['O comentário é obrigatório.']],
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make([
-            'comentario' => $comentarioHtml,
-            'tipo' => $request->input('tipo'),
-        ], [
-            'comentario' => 'required|string|min:1|max:20000',
-            'tipo' => 'nullable|in:' . implode(',', TarefaComentario::TIPOS),
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar o comentário',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
+        $dados = $request->validated();
+        $comentarioHtml = $dados['comentario'];
 
         try {
             \DB::beginTransaction();
             $comentario = $tarefa->Comentarios()->create([
                 'comentario' => $comentarioHtml,
-                'tipo' => $request->input('tipo', TarefaComentario::TIPO_COMENTARIO),
+                'tipo' => $dados['tipo'] ?? TarefaComentario::TIPO_COMENTARIO,
             ]);
             \DB::commit();
 
@@ -126,7 +107,7 @@ class TarefasComentarioController extends Controller
     }
 
     public function update(
-        Request $request,
+        UpdateTarefaComentarioRequest $request,
         int $empresa,
         Quadro $quadro,
         ListaTarefa $lista,
@@ -140,28 +121,8 @@ class TarefasComentarioController extends Controller
             return response()->json(['msg' => 'Só o autor pode editar este comentário.'], 403);
         }
 
-        $comentarioHtml = WeeklyReportHtml::sanitize($request->input('comentario'));
-        if (WeeklyReportHtml::isEmpty($comentarioHtml)) {
-            return response()->json([
-                'msg' => 'Informe o texto do comentário',
-                'erros' => ['comentario' => ['O comentário é obrigatório.']],
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make([
-            'comentario' => $comentarioHtml,
-            'tipo' => $request->input('tipo'),
-        ], [
-            'comentario' => 'required|string|min:1|max:20000',
-            'tipo' => 'nullable|in:' . implode(',', TarefaComentario::TIPOS),
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o comentário',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
+        $dadosValidados = $request->validated();
+        $comentarioHtml = $dadosValidados['comentario'];
 
         try {
             \DB::beginTransaction();

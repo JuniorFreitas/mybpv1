@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\MudarSetorOcorrenciaRequest;
+use App\Http\Requests\Operacional\StoreOcorrenciaNovaMensagemRequest;
+use App\Http\Requests\Operacional\StoreOcorrenciaRequest;
+use App\Http\Requests\Operacional\StoreOcorrenciaSetorRequest;
+use App\Http\Requests\Operacional\StoreOcorrenciaTagRequest;
 use App\Jobs\Ocorrencias\JobOcorrenciaFinaliza;
 use App\Jobs\Ocorrencias\JobOcorrenciaNovaMensagem;
 use App\Jobs\Ocorrencias\JobOcorrenciaStore;
@@ -45,7 +50,7 @@ class OcorrenciaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreOcorrenciaRequest $request)
     {
         $this->authorize('ocorrencia');
         $dados = $request->input();
@@ -54,35 +59,6 @@ class OcorrenciaController extends Controller
         $dados['quem_criou'] = auth()->id();
         $dados['quem_atualizou'] = auth()->id();
 
-        // Validação Comum
-        $dadosValidados = \Validator::make($dados,
-            [
-                'assunto' => 'required|min:2',
-                'setor_id' => ['required', function ($attribute, $value, $fail) {
-                    $setor = OcorrenciaSetor::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
-                    if ($setor == 0) {
-                        $fail('Setor não cadastrado.');
-                    }
-                }],
-                'tag_id' => ['nullable', function ($attribute, $value, $fail) {
-                    if ($value === null || $value === '') {
-                        return;
-                    }
-                    $tag = Tag::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
-                    if ($tag == 0) {
-                        $fail('Tag não cadastrada.');
-                    }
-                }],
-                'tipo' => 'required',
-                'resposta' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             //Se o tipo for Anotação
@@ -137,17 +113,10 @@ class OcorrenciaController extends Controller
         }
     }
 
-    public function novaMensagem(Request $request)
+    public function novaMensagem(StoreOcorrenciaNovaMensagemRequest $request)
     {
         $dados = $request->input();
         $dados['user_id'] = auth()->id();
-        $dadosValidados = \Validator::make($dados, ['resposta' => 'required']);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             Ocorrencia::find($dados['ocorrencia_id'])->update([
@@ -198,25 +167,9 @@ class OcorrenciaController extends Controller
         }
     }
 
-    public function mudarSetor(Request $request)
+    public function mudarSetor(MudarSetorOcorrenciaRequest $request)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'setor_id' => ['required', function ($attribute, $value, $fail) {
-                    $setor = OcorrenciaSetor::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
-                    if ($setor == 0) {
-                        $fail('Setor não cadastrado.');
-                    }
-                }]
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Mudar Setor',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             Ocorrencia::find($dados['ocorrencia_id'])->update([
@@ -432,34 +385,10 @@ class OcorrenciaController extends Controller
         return Arquivo::anexoDownload([Arquivo::DISCO_CLOUD], $arquivo);
     }
 
-    public function cadastroTag(Request $request)
+    public function cadastroTag(StoreOcorrenciaTagRequest $request)
     {
         $this->authorize('ocorrencia');
-        $nome = $this->normalizarNomeCadastro($request->input('nome'));
-        $dados = ['nome' => $nome];
-        $empresaId = auth()->user()->empresa_id;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                'min:1',
-                function ($attribute, $value, $fail) use ($empresaId) {
-                    $existe = Tag::query()
-                        ->where('empresa_id', $empresaId)
-                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower($value, 'UTF-8')])
-                        ->exists();
-                    if ($existe) {
-                        $fail('Já existe uma tag com este nome para esta empresa.');
-                    }
-                },
-            ],
-        ]);
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = ['nome' => $request->input('nome')];
         try {
             DB::beginTransaction();
             Tag::create($dados);
@@ -474,34 +403,10 @@ class OcorrenciaController extends Controller
 
     }
 
-    public function cadastroSetor(Request $request)
+    public function cadastroSetor(StoreOcorrenciaSetorRequest $request)
     {
         $this->authorize('ocorrencia');
-        $nome = $this->normalizarNomeCadastro($request->input('nome'));
-        $dados = ['nome' => $nome];
-        $empresaId = auth()->user()->empresa_id;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                'min:1',
-                function ($attribute, $value, $fail) use ($empresaId) {
-                    $existe = OcorrenciaSetor::query()
-                        ->where('empresa_id', $empresaId)
-                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower($value, 'UTF-8')])
-                        ->exists();
-                    if ($existe) {
-                        $fail('Já existe um setor com este nome para esta empresa.');
-                    }
-                },
-            ],
-        ]);
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = ['nome' => $request->input('nome')];
         try {
             DB::beginTransaction();
             OcorrenciaSetor::create($dados);
@@ -514,14 +419,6 @@ class OcorrenciaController extends Controller
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
-    }
-
-    private function normalizarNomeCadastro(?string $nome): string
-    {
-        $nome = trim((string) $nome);
-        $nome = preg_replace('/\s+/u', ' ', $nome) ?? $nome;
-
-        return $nome;
     }
 
 }

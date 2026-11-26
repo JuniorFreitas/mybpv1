@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreAtaReuniaoRequest;
+use App\Http\Requests\Operacional\UpdateAtaReuniaoRequest;
 use App\Models\AtaReuniao;
 use App\Models\AtaReuniaoAcao;
 use App\Models\AtaReuniaoAssunto;
@@ -41,100 +43,83 @@ class AtaReuniaoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreAtaReuniaoRequest $request)
     {
         $this->authorize('administracao_atareuniao_insert');
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'local' => 'required',
-                'assuntos' => 'required',
-                'tipos' => 'required',
-                'acoes' => 'required',
-                'participantes' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Ata de Reunião',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                $newTime = explode(' às ', $dados['data_inicio']);
-                $newDH = $newTime[0] . ' ' . $newTime[1];
-                $data = new DataHora($newDH);
-                $dados['data_inicio'] = $data->dataHoraInsert();
+            $newTime = explode(' às ', $dados['data_inicio']);
+            $newDH = $newTime[0] . ' ' . $newTime[1];
+            $data = new DataHora($newDH);
+            $dados['data_inicio'] = $data->dataHoraInsert();
 
-                $newTime = explode(' às ', $dados['data_fim']);
-                $newDH = $newTime[0] . ' ' . $newTime[1];
-                $data = new DataHora($newDH);
-                $dados['data_fim'] = $data->dataHoraInsert();
+            $newTime = explode(' às ', $dados['data_fim']);
+            $newDH = $newTime[0] . ' ' . $newTime[1];
+            $data = new DataHora($newDH);
+            $dados['data_fim'] = $data->dataHoraInsert();
 
-                $ata = [
-                    'centro_custo_id' => $dados['centro_custo_id'],
-                    'area_etiqueta_id' => $dados['area_etiqueta_id'],
-                    'quem_cadastrou' => auth()->user()->id,
-                    'local' => $dados['local'],
-                    'data_inicio' => $dados['data_inicio'],
-                    'data_fim' => $dados['data_fim']
+            $ata = [
+                'centro_custo_id' => $dados['centro_custo_id'] ?? null,
+                'area_etiqueta_id' => $dados['area_etiqueta_id'] ?? null,
+                'quem_cadastrou' => auth()->user()->id,
+                'local' => $dados['local'],
+                'data_inicio' => $dados['data_inicio'],
+                'data_fim' => $dados['data_fim']
+            ];
+
+            $id = AtaReuniao::create($ata)->id;
+
+            foreach ($dados['assuntos'] as $s) {
+                $as = [
+                    'ata_reuniao_id' => $id,
+                    'assunto' => $s['assunto'],
                 ];
-
-                $id = AtaReuniao::create($ata)->id;
-
-                foreach ($dados['assuntos'] as $s) {
-                    $as = [
-                        'ata_reuniao_id' => $id,
-                        'assunto' => $s['assunto'],
-                    ];
-                    AtaReuniaoAssunto::create($as);
-                }
-
-                foreach ($dados['tipos'] as $t) {
-                    $ti = [
-                        'ata_reuniao_id' => $id,
-                        'tipo' => $t['tipo'],
-                        'observacao' => $t['observacao'],
-                    ];
-                    AtaReuniaoTipo::create($ti);
-                }
-
-                foreach ($dados['acoes'] as $a) {
-                    $ac = [
-                        'ata_reuniao_id' => $id,
-                        'acao' => $a['acao'],
-                        'prazo' => $a['prazo'],
-                        'continuo' => $a['continuo'],
-                        'status' => 'andamento',
-                        'observacao' => $a['observacao'],
-                        'responsavel' => $a['responsavel'],
-                        'email' => $a['email'],
-                    ];
-                    AtaReuniaoAcao::create($ac);
-                }
-
-                foreach ($dados['participantes'] as $p) {
-                    $pa = [
-                        'ata_reuniao_id' => $id,
-                        'nome' => $p['nome'],
-                        'funcao' => $p['funcao'],
-                    ];
-                    AtaReuniaoParticipante::create($pa);
-                }
-
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE ATA REUNIÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                AtaReuniaoAssunto::create($as);
             }
+
+            foreach ($dados['tipos'] as $t) {
+                $ti = [
+                    'ata_reuniao_id' => $id,
+                    'tipo' => $t['tipo'],
+                    'observacao' => $t['observacao'],
+                ];
+                AtaReuniaoTipo::create($ti);
+            }
+
+            foreach ($dados['acoes'] as $a) {
+                $ac = [
+                    'ata_reuniao_id' => $id,
+                    'acao' => $a['acao'],
+                    'prazo' => $a['prazo'],
+                    'continuo' => $a['continuo'],
+                    'status' => 'andamento',
+                    'observacao' => $a['observacao'],
+                    'responsavel' => $a['responsavel'],
+                    'email' => $a['email'],
+                ];
+                AtaReuniaoAcao::create($ac);
+            }
+
+            foreach ($dados['participantes'] as $p) {
+                $pa = [
+                    'ata_reuniao_id' => $id,
+                    'nome' => $p['nome'],
+                    'funcao' => $p['funcao'],
+                ];
+                AtaReuniaoParticipante::create($pa);
+            }
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE ATA REUNIÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+            //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -167,58 +152,40 @@ class AtaReuniaoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateAtaReuniaoRequest $request, $id)
     {
         $this->authorize('cadastro_beneficio_update');
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'local' => 'required',
-                'assuntos' => 'required',
-                'tipos' => 'required',
-                'acoes' => 'required',
-                'participantes' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Editar Ata Reunião',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                $ata = AtaReuniao::where('id', $dados['id'])->first();
+            $ata = AtaReuniao::where('id', $dados['id'])->first();
 
-                $dadosAta = [
-                    'local' => $dados['local'],
-                    'centro_custo_id' => $dados['centro_custo_id'],
-                    'area_etiqueta_id' => $dados['area_etiqueta_id'],
-                ];
+            $dadosAta = [
+                'local' => $dados['local'],
+                'centro_custo_id' => $dados['centro_custo_id'] ?? null,
+                'area_etiqueta_id' => $dados['area_etiqueta_id'] ?? null,
+            ];
 
-                $ata->update($dadosAta);
+            $ata->update($dadosAta);
 
+            foreach ($dados['acoes'] as $a) {
 
-                foreach ($dados['acoes'] as $a) {
+                $acao = AtaReuniaoAcao::where('id', $a['id'])->first();
 
-                    $acao = AtaReuniaoAcao::where('id', $a['id'])->first();
-
-                    $acao->update(['status' => $a['status']]);
-                }
-
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE ATA REUNIÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                //return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                $acao->update(['status' => $a['status']]);
             }
+
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE ATA REUNIÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            //return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

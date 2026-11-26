@@ -311,8 +311,8 @@ class CartaOfertaGerencialController extends Controller
                         ) {
                             $dados['telefone'] = $telefone->sonumero;
 
-                            $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
-                            if ($ambiente != 'prod') {
+                            $ambiente = (string) config('app.ambiente', 'local');
+                            if ($ambiente !== 'prod') {
                                 $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
                                 $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
                             }
@@ -396,7 +396,7 @@ class CartaOfertaGerencialController extends Controller
         }
 
         $apelido = optional(auth()->user()->Empresa)->apelido ?? '';
-        $baseUrl = rtrim((string) env('APP_URL'), '/');
+        $baseUrl = rtrim((string) config('app.url'), '/');
         $presenter = app(CartaOfertaListagemPresenter::class);
 
         $itens = $itens->map(function (CartaOferta $item) use ($presenter, $docsByCartaId, $apelido, $baseUrl) {
@@ -418,7 +418,7 @@ class CartaOfertaGerencialController extends Controller
     public function requestSgi($token)
     {
 
-        switch (env('APP_URL')) {
+        switch ((string) config('app.url')) {
             case 'https://sistema.mybp.com.br':
                 $url = 'https://sgi.bpse.com.br';
                 break;
@@ -434,7 +434,7 @@ class CartaOfertaGerencialController extends Controller
 
         $client = new Client();
         $headers = [
-            'X-API-TOKEN' => (string) env('SGI_X_API_TOKEN', env('X_API_TOKEN')),
+            'X-API-TOKEN' => (string) config('services.sgi.x_api_token', ''),
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBPIN'
         ];

@@ -56,38 +56,15 @@ class RequisicaoVagaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreRequisicaoVagaRequest $request)
     {
-        //        $this->authorize('');
-        $dados = $request->input();
-        $dados['previsao_inicio'] = $dados['imediata'] ? null : $dados['previsao_inicio'];
-        $dados['outras_informacoes']['salario_valor'] = $dados['outras_informacoes']['salario'] == 'exceção' ? $dados['outras_informacoes']['salario_valor_format'] : null;
+        $dados = $request->all();
+        $dados['previsao_inicio'] = !empty($dados['imediata']) ? null : ($dados['previsao_inicio'] ?? null);
+        $dados['outras_informacoes']['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção'
+            ? ($dados['outras_informacoes']['salario_valor_format'] ?? null)
+            : null;
         $dados['user_id'] = auth()->user()->id;
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'cargo_id' => 'required',
-                'area_id' => 'required',
-                'quantidade' => 'required',
-                'tipo_contratacao' => 'required',
-                'prioridade' => 'required',
-                'solicitante' => 'required',
-                'outras_informacoes.posicao' => 'required',
-                'outras_informacoes.processo' => 'required',
-                'outras_informacoes.contrato' => 'required',
-                'outras_informacoes.ppra' => 'required',
-                'outras_informacoes.salario' => 'required',
-                'outras_informacoes.beneficio' => 'required',
-                'outras_informacoes.gestor_id' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+
         $customValidation = $this->validarCustomValues(auth()->user()->empresa_id, $dados['custom_values'] ?? []);
         if ($customValidation !== true) {
             return response()->json([
@@ -249,37 +226,14 @@ class RequisicaoVagaController extends Controller
      * @param \App\Models\RequisicaoVagaMovimentacao $requisicaoVaga
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, RequisicaoVagaMovimentacao $requisicaoVaga)
+    public function update(\App\Http\Requests\Movimentacao\UpdateRequisicaoVagaRequest $request, RequisicaoVagaMovimentacao $requisicaoVaga)
     {
-        $dados = $request->input();
-        $dados['previsao_inicio'] = $dados['imediata'] ? null : $dados['previsao_inicio'];
-        $dados['outras_informacoes']['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção' ? ($dados['outras_informacoes']['salario_valor_format'] ?? null) : null;
+        $dados = $request->all();
+        $dados['previsao_inicio'] = !empty($dados['imediata']) ? null : ($dados['previsao_inicio'] ?? null);
+        $dados['outras_informacoes']['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção'
+            ? ($dados['outras_informacoes']['salario_valor_format'] ?? null)
+            : null;
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'cargo_id' => 'required',
-                'area_id' => 'required',
-                'quantidade' => 'required',
-                'tipo_contratacao' => 'required',
-                'prioridade' => 'required',
-                'solicitante' => 'required',
-                'outras_informacoes.posicao' => 'required',
-                'outras_informacoes.processo' => 'required',
-                'outras_informacoes.contrato' => 'required',
-                'outras_informacoes.ppra' => 'required',
-                'outras_informacoes.salario' => 'required',
-                'outras_informacoes.beneficio' => 'required',
-                'outras_informacoes.gestor_id' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao alterar Solicitação de vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $dadosMerge = array_merge($dados, $dados['outras_informacoes'] ?? []);

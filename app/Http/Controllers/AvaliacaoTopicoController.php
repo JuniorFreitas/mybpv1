@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StoreAvaliacaoTopicoRequest;
+use App\Http\Requests\Avaliacao\UpdateAvaliacaoTopicoRequest;
 use App\Models\AvaliacaoTipo;
 use App\Models\AvaliacaoTopico;
 use App\Models\Simulado;
@@ -41,7 +43,7 @@ class AvaliacaoTopicoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreAvaliacaoTopicoRequest $request)
     {
         $this->authorize('cadastro_avaliacao_topico_insert');
         $dados = $request->input();
@@ -59,20 +61,6 @@ class AvaliacaoTopicoController extends Controller
             ], 400);
         }
 
-        $dadosValidados = \Validator::make($dados, [
-            'topico' => 'required',
-            'avaliacao_tipo_id' => 'required',
-            'subtopico.*.topico' => 'required',
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Tópicos',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
         try {
             DB::beginTransaction();
             $subtopicos = collect($dados['subtopicos']);
@@ -152,7 +140,7 @@ class AvaliacaoTopicoController extends Controller
      * @param \App\Models\AvaliacaoTopico $avaliacaoTopico
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, AvaliacaoTopico $avaliacaoTopico)
+    public function update(UpdateAvaliacaoTopicoRequest $request, AvaliacaoTopico $avaliacaoTopico)
     {
         $this->authorize('cadastro_avaliacao_topico_update');
         $dados = $request->input();
@@ -172,20 +160,6 @@ class AvaliacaoTopicoController extends Controller
             ], 400);
         }
 
-        $dadosValidados = \Validator::make($dados, [
-            'topico' => 'required',
-            'avaliacao_tipo_id' => 'required',
-            'subtopico.*.topico' => 'required',
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar tópicos de avaliações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
         try {
             DB::beginTransaction();
             $subtopicos = collect($dados['subtopicos']);

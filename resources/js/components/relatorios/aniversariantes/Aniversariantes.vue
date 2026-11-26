@@ -35,7 +35,7 @@
                 <button
                     type="button"
                     class="btn btn-sm btn-success"
-                    @click.prevent="exportaPdf()"
+                    @click.prevent="exportarPdf()"
                     :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0)"
                 >
                     <i class="fas fa-file-pdf"></i> Exportar PDF
@@ -43,7 +43,7 @@
                 <button
                     type="button"
                     class="btn btn-sm btn-success"
-                    @click.prevent="exportaExcel()"
+                    @click.prevent="exportarExcel()"
                     :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
                 >
                     <i class="fas fa-file-excel"></i> Exportar Excel
@@ -84,13 +84,16 @@
 </template>
 
 <script>
-import ExportacaoMixin from '../../../mixins/Exportacoes'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import { useExportacao } from '../../../composables/useExportacao'
 
 export default {
-    mixins: [ExportacaoMixin],
     components: { ComboboxAutoComplete, FiltroListagem },
+    setup() {
+        const { preloadExportacao, exportaExcel, exportaPdf } = useExportacao()
+        return { preloadExportacao, exportaExcel, exportaPdf }
+    },
     props: {
         filtro: {
             type: Boolean,
@@ -142,6 +145,12 @@ export default {
         }
     },
     methods: {
+        async exportarExcel() {
+            await this.exportaExcel(this.urlExportacao, this.paramsExport)
+        },
+        async exportarPdf() {
+            await this.exportaPdf(this.urlPdf, this.paramsExport)
+        },
         atualizar() {
             this.controle.carregando = true
             axios

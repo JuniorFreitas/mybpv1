@@ -29,7 +29,7 @@ class FeriasPrevistaController extends Controller
      */
     public function index()
     {
-        //
+        return redirect()->route('g.movimentacao.index');
     }
 
     /**
@@ -48,51 +48,15 @@ class FeriasPrevistaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreFeriasPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->validated() + $request->input();
         $dados['user_id'] = auth()->id();
         $data = new DataHora($dados['ultima_data']);
         $dados['ultima_data'] = $data->dataInsert();
-        $dados['tem_faltas'] = $dados['tem_faltas'] == 'true' ? true : false;
-        $dados['qnt_faltas'] = $dados['qnt_faltas'] == null ? 0 : $dados['qnt_faltas'];
+        $dados['tem_faltas'] = (bool) ($dados['tem_faltas'] ?? false);
+        $dados['qnt_faltas'] = $dados['qnt_faltas'] ?? 0;
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'nullable',
-                'qnt_dias' => 'required',
-                'dias_saldo' => 'required',
-                'periodo_aquisitivo_id' => 'required',
-                'colaborador_id' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Informe um colaborador para continuar');
-                        }
-                    }
-                ],
-                'gestor_id' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Informe um gestor para aprovação');
-                        }
-                    }
-                ],
-                'data_admissao' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Atualize a data de admissão do colaborador');
-                        }
-                    }
-                ]
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Férias',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
 
@@ -223,7 +187,7 @@ class FeriasPrevistaController extends Controller
      * @param \App\Models\Ferias $ferias
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Ferias $ferias)
+    public function update(\App\Http\Requests\Movimentacao\UpdateFeriasPrevistaRequest $request, Ferias $ferias)
     {
         $this->authorize('planejamento_movimentacao_ferias_editar');
         $dados = $request->only([
@@ -257,28 +221,6 @@ class FeriasPrevistaController extends Controller
         // Payload de edição pode omitir solicitante_id (mapper antigo); preserva o existente.
         if (empty($dados['solicitante_id'])) {
             $dados['solicitante_id'] = $ferias->solicitante_id ?: auth()->id();
-        }
-
-        // Validar os dados
-        $dadosValidados = \Validator::make($dados, [
-            'periodo_aquisitivo_id' => 'required',
-            'data_saida' => 'required',
-            'data_retorno' => 'required',
-            'ultima_data' => 'required',
-            'qnt_dias' => 'required',
-            'dias_saldo' => 'required',
-            'tem_faltas' => 'required|boolean',
-            'qnt_faltas' => 'required',
-            'solicitante_id' => 'required',
-            'abono_pecuniario' => 'required|boolean',
-            'adiantamento_decimo_terceiro' => 'required|boolean',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Editar Férias',
-                'erros' => $dadosValidados->errors()
-            ], 400);
         }
 
         try {

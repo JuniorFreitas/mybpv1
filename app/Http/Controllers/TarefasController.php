@@ -6,6 +6,9 @@ use App\Events\Notificacoes\NotificacaoEvent;
 use App\Events\WeeklyReport\AnexoEvent;
 use App\Events\WeeklyReport\TarefaEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreTarefaRequest;
+use App\Http\Requests\Operacional\UpdateTarefaAnexoRequest;
+use App\Http\Requests\Operacional\UpdateTarefaRequest;
 use App\Jobs\Weekly_report\UpdateMembrosJob;
 use App\Models\Arquivo;
 use App\Models\ChecklistsTarefa;
@@ -31,20 +34,9 @@ class TarefasController extends Controller
 {
     use GuardsWeeklyReportTenant;
 
-    public function store(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista)
+    public function store(StoreTarefaRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar a tarefa',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -109,21 +101,9 @@ class TarefasController extends Controller
         return $tarefa->Logs()->paginate(WeeklyReportEagerLoads::PAGE_SIZE, ['*'], 'page', $page);
     }
 
-    public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    public function update(UpdateTarefaRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'min:1',
-            'concluido' => 'boolean',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar a tarefa',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -640,21 +620,10 @@ class TarefasController extends Controller
         return Arquivo::anexoShow(Arquivo::DISCO_WEEKLY_REPORT, $path);
     }
 
-    public function anexoUpdate(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, Arquivo $arquivo)
+    public function anexoUpdate(UpdateTarefaAnexoRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, Arquivo $arquivo)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
         $this->assertAnexoModelDaTarefa($tarefa, $arquivo);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'nome' => 'min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o anexo',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();

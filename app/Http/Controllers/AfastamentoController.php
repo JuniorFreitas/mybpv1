@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Afastamento\StoreAfastamentoRequest;
 use App\Models\Afastamento;
 use App\Models\Arquivo;
 use App\Models\FeedbackCurriculo;
@@ -11,48 +12,37 @@ use MasterTag\DataHora;
 
 class AfastamentoController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreAfastamentoRequest $request)
     {
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'afastamento.*.motivo' => 'required',
-            'afastamento.*.periodo' => 'required',
-        ]);
+        $dados = $request->validated();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Afastamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();//
-                foreach ($dados['afastamento'] as $afastamento) {
-                    if(isset($afastamento['novo'])){
-                        $afastamentoAdm = Afastamento::create($afastamento);
-                            foreach ($afastamento['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                            foreach ($afastamento['anexos'] as $index => $anexo) {
-                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                if ($arquivo) {
-                                    $arquivo->temporario = false;
-                                    $arquivo->chave = '';
-                                    $arquivo->save();
-                                    $afastamentoAdm->Anexos()->attach($arquivo->id);
-                                }
-                            }
+        try {
+            DB::beginTransaction();//
+            foreach ($dados['afastamento'] as $afastamento) {
+                if (isset($afastamento['novo'])) {
+                    $afastamentoAdm = Afastamento::create($afastamento);
+                    foreach ($afastamento['anexosDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                    foreach ($afastamento['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $afastamentoAdm->Anexos()->attach($arquivo->id);
+                        }
                     }
                 }
-                DB::commit();
-                return response()->json([]);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error CADASTRO DE AFASTAMENTO HISTORICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
             }
+            DB::commit();
+            return response()->json([]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error CADASTRO DE AFASTAMENTO HISTORICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

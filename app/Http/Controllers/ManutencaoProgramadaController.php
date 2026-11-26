@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\UpdateManutencaoProgramadaRequest;
 use App\Models\ManutencaoProgramada;
-use Illuminate\Http\Request;
 
 class ManutencaoProgramadaController extends Controller
 {
@@ -19,27 +19,14 @@ class ManutencaoProgramadaController extends Controller
         return response()->json($manutencao,201);
     }
 
-    public function update(Request $request)
+    public function update(UpdateManutencaoProgramadaRequest $request)
     {
+        $manutencao = ManutencaoProgramada::first();
+        $manutencao->ativo = !$manutencao->ativo;
+        $manutencao->datahora = $request->datahora;
+        $manutencao->save();
+        $manutencao->refresh();
 
-        $dadosValidados = \Validator::make($request->input(), [
-            'datahora' => "required|date_format:d/m/Y H:i",
-        ]);
-        if($dadosValidados->fails()){ // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar',
-                'erros' => $dadosValidados->errors()
-            ],400);
-        }else{
-
-            $manutencao = ManutencaoProgramada::first();
-            $manutencao->ativo = !$manutencao->ativo;
-            $manutencao->datahora = $request->datahora;
-            $manutencao->save();
-            $manutencao->refresh();
-
-            //$manutencao->update($request->only(['datahora']));
-            return response()->json($manutencao,201);
-        }
+        return response()->json($manutencao,201);
     }
 }

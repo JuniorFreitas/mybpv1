@@ -3,30 +3,32 @@
 > Convenções usadas neste documento
 > - Confirmado no código: risco sustentado diretamente pelos arquivos analisados.
 > - Inferido: risco derivado da combinação de evidências.
+>
+> **Atualização 2026-11-23 (Housekeeping):** coluna Status revalidada no código. Detalhes históricos nas seções abaixo podem estar datados — confiar no Status da tabela. Board ativo: `.harness/backlog/INDEX.md`.
 
 ## Tabela de riscos
 
-| ID | Risco | Tipo | Severidade | Confirmado/Inferido | Evidência principal |
+| ID | Risco | Tipo | Severidade | Status (2026-11-23) | Evidência principal |
 |---|---|---|---|---|---|
-| R1 | Credenciais hardcoded em código-fonte | Segurança | Crítica | Confirmado | `app/Services/Dynamus/ZapDynamusService.php`, `resources/views/home.blade.php` |
-| R2 | Rotas de exportação protegidas por segredo na URL | Segurança | Crítica | Confirmado | `routes/web.php` |
-| R3 | `CORS` liberado para `*` com credenciais | Segurança | Alta | Confirmado | `config/cors.php` |
-| R4 | Controllers e models gigantes com regra espalhada | Manutenibilidade | Alta | Confirmado | `app/Http/Controllers/AdmissaoController.php`, `app/Models/Sistema.php`, `app/Models/Admissao.php` |
-| R5 | Cobertura automatizada baixa fora dos módulos novos | Qualidade | Alta | Confirmado | `tests/*`, `phpunit.xml` |
-| R6 | Dependência de `withoutGlobalScopes()` em fluxo multiempresa | Segurança/consistência | Alta | Confirmado | `app/Services/AssinaturaDigital/AssinaturaDigitalService.php`, `app/Jobs/RequisicaoVaga/JobNotificacaoRecursiva.php`, `app/Http/Controllers/DocumentosPreAdmissaoController.php` |
-| R7 | Validação dispersa em controllers; quase sem Form Request | Qualidade | Alta | Confirmado | `app/Http/Requests/*`, `app/Http/Controllers/*` |
-| R8 | Legado Blade/jQuery/Vue inline convivendo com Vue 3 modular | Arquitetura | Média | Confirmado | `resources/views/auth/login.blade.php`, `resources/js/g/*/app.js`, `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md` |
-| R9 | Bug provável em `setDataAsoAttribute()` | Funcional | Alta | Confirmado | `app/Models/Admissao.php` |
-| R10 | Cache documental ineficaz por `Cache::forget()` imediato | Performance | Média | Confirmado | `app/Models/DocumentosCurriculosAdmissaoEmpresa.php` |
-| R11 | Uso de objeto nulo em autenticação de documentos pré-admissionais | Funcional | Média | Confirmado | `app/Http/Controllers/DocumentosPreAdmissaoController.php` |
-| R12 | URL de download montada com typo `filesystemzs` | Funcional | Média | Confirmado | `app/Http/Controllers/PreAdmissaoController.php` |
-| R13 | Fluxo de troca obrigatória de senha parece incoerente entre login e middleware | Segurança/UX | Média | Inferido forte | `app/Http/Controllers/Auth/LoginController.php`, `app/Http/Middleware/CheckPasswordReset.php`, `app/Models/User.php` |
-| R14 | Middleware `configuracao_habilidades` usado em rotas, mas não registrado | Funcional | Média | Confirmado | `routes/web.php`, `bootstrap/app.php` |
-| R15 | Operação sensível via comando que executa `ssh root@...` | Operação/segurança | Alta | Confirmado | `routes/MybpCommand.php` |
-| R16 | Dockerfile remove `composer.lock` antes do install | Build/reprodutibilidade | Alta | Confirmado | `Dockerfile` |
-| R17 | `Horizon` liberado somente ao usuário `id=1` | Operação/governança | Média | Confirmado | `app/Providers/HorizonServiceProvider.php` |
-| R18 | Documentação principal apontada no README não existe | Governança | Média | Confirmado | `README.md`, ausência de `docs/README.md` |
-| R19 | Scheduler declarado no código, mas inativo no runtime | Operação/automação | Crítica | Confirmado + inferido | `app/Console/Kernel.php`, `bootstrap/app.php` |
+| R1 | Credenciais hardcoded (ZapDynamus) | Segurança | Crítica | **Mitigado no código** (key via `ZAPDYNAMUS_API_KEY`; **rotacionar no provedor** antes do próximo deploy) | `config/services.php`, `ZapDynamusService.php` |
+| R2 | Rotas de exportação por segredo na URL | Segurança | Crítica | **Resolvido** (`can:` nas rotas) | `routes/web.php` |
+| R3 | `CORS` `*` com credentials | Segurança | Alta | **Resolvido** (`CORS_ALLOWED_ORIGINS`) | `config/cors.php` |
+| R4 | Controllers/models gigantes | Manutenibilidade | Alta | **Aberto** (TD-002) | `AdmissaoController.php` |
+| R5 | Cobertura de testes baixa em fluxos críticos | Qualidade | Alta | **Parcial** (regressões ASO/Recaptcha/Zap; QA-001 restante) | `tests/*` |
+| R6 | `withoutGlobalScopes()` multi-tenant | Segurança | Alta | **Parcial** (TD-003 DONE + SEC-008 corrigido; bypasses legítimos restantes em jobs/APIs públicas) | `app/Tenant/*`, `ScopeClientesEmpresa`, services/jobs |
+| R7 | Quase sem Form Request | Qualidade | Alta | **Aberto** (TD-001) | `app/Http/Requests/*` |
+| R8 | Blade/jQuery + Vue 3 | Arquitetura | Média | **Aberto** (FE-001; build já é Vite) | `resources/js/g/*` |
+| R9 | `setDataAsoAttribute` zera valor | Funcional | Alta | **Resolvido** (BUG-001) | `app/Models/Admissao.php` |
+| R10 | Cache documental `forget` indevido | Performance | Média | **Resolvido** | `DocumentosCurriculosAdmissaoEmpresa` |
+| R11 | Null em docs pré-admissionais | Funcional | Média | **Hipótese** (revalidar) | `DocumentosPreAdmissaoController` |
+| R12 | Typo `filesystemzs` | Funcional | Média | **Resolvido** | — |
+| R13 | Troca obrigatória de senha inconsistente | Segurança/UX | Média | **Aberto** (inferido) | Login + CheckPasswordReset |
+| R14 | Middleware `configuracao_habilidades` | Funcional | Média | **Resolvido** (`can:`) | `routes/web.php` |
+| R15 | `ssh root@` em comando | Operação | Alta | **Mitigado** (env `MYBP_DUMP_*`) | `routes/MybpCommand.php` |
+| R16 | Dockerfile remove `composer.lock` | Build | Alta | **Resolvido** | `Dockerfile` |
+| R17 | Horizon só `id=1` | Governança | Média | **Resolvido** (Gate + env) | `HorizonServiceProvider` |
+| R18 | `docs/README.md` ausente | Governança | Média | **Resolvido** | `docs/README.md` |
+| R19 | Scheduler inativo | Operação | Crítica | **Resolvido** (`routes/schedule.php`) | `bootstrap/app.php` |
 
 ## Achados detalhados
 

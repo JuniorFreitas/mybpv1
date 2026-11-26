@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\UpdateDocumentosPreAdmissaoCandidatoRequest;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
@@ -265,113 +266,106 @@ class DocumentosPreAdmissaoController extends Controller
             return response()->json(['msg' => 'O termo foi atualizado. Recarregue a página e aceite novamente.'], 422);
         }
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
-            'filiacao_mae' => 'required',
-        ]);
+        // Valida após sessão/termo para preservar 401/422 antes do 400 de campos.
+        $formRequest = UpdateDocumentosPreAdmissaoCandidatoRequest::createFrom($request);
+        $formRequest->setContainer(app())->setRedirector(app('redirect'));
+        $formRequest->validateResolved();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                $curriculo = Curriculo::withoutGlobalScopes()->find($curriculoId);
+            $curriculo = Curriculo::withoutGlobalScopes()->find($curriculoId);
 
-                $curriculo->update([
-                    'nome' => $dados['nome'],
-                    'filiacao_pai' => $dados['filiacao_pai'],
-                    'filiacao_mae' => $dados['filiacao_mae'],
-                ]);
+            $curriculo->update([
+                'nome' => $dados['nome'],
+                'filiacao_pai' => $dados['filiacao_pai'],
+                'filiacao_mae' => $dados['filiacao_mae'],
+            ]);
 
-                if (isset($dados['telefonesDelete'])) {
-                    foreach ($dados['telefonesDelete'] as $telefonesDelete) {
-                        $curriculo->Telefones()->find($telefonesDelete)->delete();
-                    }
+            if (isset($dados['telefonesDelete'])) {
+                foreach ($dados['telefonesDelete'] as $telefonesDelete) {
+                    $curriculo->Telefones()->find($telefonesDelete)->delete();
                 }
-
-                foreach ($dados['telefones'] as $linha) {
-                    $linha['principal'] = $linha['principal'] == 'true';
-                    if ($linha['id'] == 0) {
-                        $telPrincipal = $curriculo->Telefones()->create($linha)->id;
-                        if ($linha['principal']) {
-                            $dados['telefone_id'] = $telPrincipal;
-                        }
-                    } else {
-                        $curriculo->Telefones->find($linha['id'])->update($linha);
-                        if ($linha['principal']) {
-                            $dados['telefone_id'] = $linha['id'];
-                        }
-                    }
-                }
-
-                foreach ($request->docs_curriculo_pre_adm as $doc) {
-                    if (isset($doc['docs_curriculo_anexosDelete'])) {
-                        foreach ($doc['docs_curriculo_anexosDelete'] as $anexo) {
-                            // Só exclui anexos que pertencem ao próprio candidato.
-                            $pertence = DB::table('documentos_curriculos')
-                                ->where('curriculo_id', $curriculo->id)
-                                ->where('arquivo_id', $anexo)
-                                ->exists();
-                            if ($pertence) {
-                                Arquivo::find($anexo)?->excluir();
-                            }
-                        }
-                    }
-
-                    if (isset($doc['docs_curriculo_anexos'])) {
-                        foreach ($doc['docs_curriculo_anexos'] as $anexo) {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                DB::table('documentos_curriculos')->updateOrInsert(
-                                    ['curriculo_id' => $curriculo->id, 'arquivo_id' => $arquivo->id],
-                                    ['tipo' => $doc['tipo']]);
-                            }
-                        }
-                    }
-                }
-
-                DB::commit();
-
-                $protocolo = app(AuditoriaAcessoService::class)->novoProtocolo('DOC');
-                $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_TERMO_ACEITO, $sessao[1], [
-                    'protocolo' => $protocolo,
-                    'dados' => ['termo' => $termo],
-                ]);
-                $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_DOCUMENTOS_ENVIADOS, $sessao[1], [
-                    'protocolo' => $protocolo,
-                    'dados' => [
-                        'arquivo_ids' => DB::table('documentos_curriculos')
-                            ->where('curriculo_id', $curriculo->id)
-                            ->orderBy('arquivo_id')
-                            ->pluck('arquivo_id')
-                            ->all(),
-                    ],
-                ]);
-
-                JobComprovanteDocumentosPreAdmissao::dispatch([
-                    'empresa_id' => (int) $empresa->id,
-                    'registro_id' => (int) $sessao[1]->id,
-                    'curriculo_id' => (int) $curriculo->id,
-                    'protocolo' => $protocolo,
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'termo_versao' => $termo['versao'],
-                ]);
-
-                return response()->json(['protocolo' => $protocolo], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE DOCUMENTOS PRÉ ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . $dados['nome'];
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+
+            foreach ($dados['telefones'] as $linha) {
+                $linha['principal'] = $linha['principal'] == 'true';
+                if ($linha['id'] == 0) {
+                    $telPrincipal = $curriculo->Telefones()->create($linha)->id;
+                    if ($linha['principal']) {
+                        $dados['telefone_id'] = $telPrincipal;
+                    }
+                } else {
+                    $curriculo->Telefones->find($linha['id'])->update($linha);
+                    if ($linha['principal']) {
+                        $dados['telefone_id'] = $linha['id'];
+                    }
+                }
+            }
+
+            foreach ($request->docs_curriculo_pre_adm as $doc) {
+                if (isset($doc['docs_curriculo_anexosDelete'])) {
+                    foreach ($doc['docs_curriculo_anexosDelete'] as $anexo) {
+                        // Só exclui anexos que pertencem ao próprio candidato.
+                        $pertence = DB::table('documentos_curriculos')
+                            ->where('curriculo_id', $curriculo->id)
+                            ->where('arquivo_id', $anexo)
+                            ->exists();
+                        if ($pertence) {
+                            Arquivo::find($anexo)?->excluir();
+                        }
+                    }
+                }
+
+                if (isset($doc['docs_curriculo_anexos'])) {
+                    foreach ($doc['docs_curriculo_anexos'] as $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            DB::table('documentos_curriculos')->updateOrInsert(
+                                ['curriculo_id' => $curriculo->id, 'arquivo_id' => $arquivo->id],
+                                ['tipo' => $doc['tipo']]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            $protocolo = app(AuditoriaAcessoService::class)->novoProtocolo('DOC');
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_TERMO_ACEITO, $sessao[1], [
+                'protocolo' => $protocolo,
+                'dados' => ['termo' => $termo],
+            ]);
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_DOCUMENTOS_ENVIADOS, $sessao[1], [
+                'protocolo' => $protocolo,
+                'dados' => [
+                    'arquivo_ids' => DB::table('documentos_curriculos')
+                        ->where('curriculo_id', $curriculo->id)
+                        ->orderBy('arquivo_id')
+                        ->pluck('arquivo_id')
+                        ->all(),
+                ],
+            ]);
+
+            JobComprovanteDocumentosPreAdmissao::dispatch([
+                'empresa_id' => (int) $empresa->id,
+                'registro_id' => (int) $sessao[1]->id,
+                'curriculo_id' => (int) $curriculo->id,
+                'protocolo' => $protocolo,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'termo_versao' => $termo['versao'],
+            ]);
+
+            return response()->json(['protocolo' => $protocolo], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE DOCUMENTOS PRÉ ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . $dados['nome'];
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

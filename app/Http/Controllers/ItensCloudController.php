@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreItensCloudRequest;
+use App\Http\Requests\Operacional\UpdateItensCloudRequest;
 use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
@@ -9,7 +11,6 @@ use App\Models\ItensCloud;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Mail;
 use MasterTag\DataHora;
 
@@ -21,45 +22,21 @@ class ItensCloudController extends Controller
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function store(Request $request)
+    public function store(StoreItensCloudRequest $request)
     {
         $this->authorize('cloud_insert');
+        // cloud_id já é travado para o Cloud autorizado dentro do FormRequest (evita IDOR).
         $dados = $request->input();
-
-        $cloud = Cloud::encontrarAutorizadoOuAbortar($dados['cloud_id'] ?? 0);
-        $dados['cloud_id'] = $cloud->id;
 
         if (!empty($dados['pertence'])) {
             $pastaPai = ItensCloud::query()
-                ->where('cloud_id', $cloud->id)
+                ->where('cloud_id', $dados['cloud_id'])
                 ->whereKey($dados['pertence'])
                 ->first();
             if (!$pastaPai) {
                 return response()->json(['msg' => 'Pasta pai não encontrada neste Cloud'], 404);
             }
         }
-
-        $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
-            return $query->whereCloudId($dados['cloud_id'])
-                ->whereLabel($dados['label'])
-                ->whereTipo($dados['tipo'])
-                ->whereDeletedAt(null)
-                ->wherePertence($dados['pertence']);
-        });
-
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra]
-        ]);
-
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao criar nova pasta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-
 
         try {
             DB::beginTransaction();
@@ -112,67 +89,46 @@ class ItensCloudController extends Controller
      * @param \App\Models\ItensCloud $itenscloud
      * @return ItensCloud
      */
-    public function update(Request $request, ItensCloud $itenscloud)
+    public function update(UpdateItensCloudRequest $request, ItensCloud $itenscloud)
     {
         //UpdatePara Pasta
         $this->authorize('cloud_update');
-        Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
+        // Autorização do Cloud e trava de cloud_id (IDOR) já aplicadas no FormRequest.
         $dados = $request->input();
-        // Impede troca de cloud_id via payload (IDOR)
-        $dados['cloud_id'] = $itenscloud->cloud_id;
 
-        $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
-            return $query->whereCloudId($dados['cloud_id'])
-                ->whereLabel($dados['label'])
-                ->whereTipo($dados['tipo'])
-                ->whereDeletedAt(null)
-                ->wherePertence($dados['pertence']);
-        })->ignore($itenscloud->id);
+        try {
+            DB::beginTransaction();
+            $dados['quem_editou'] = auth()->id(); // pego quem editou
 
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar pasta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['quem_editou'] = auth()->id(); // pego quem editou
-
-                $dadosPermissao = [];
-                if ($request->filled('permissoes')) {
-                    foreach ($dados['permissoes'] as $grupo_cloud) {
-                        $dadosPermissao[] = $grupo_cloud['id'];
-                    }
+            $dadosPermissao = [];
+            if ($request->filled('permissoes')) {
+                foreach ($dados['permissoes'] as $grupo_cloud) {
+                    $dadosPermissao[] = $grupo_cloud['id'];
                 }
-
-                $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
-
-                $itenscloud->update($dados); // atualizo o item
-
-                //Permissão da pasta ou arquivo que está editando
-                $itenscloud->Permissoes()->sync($permissoes); // Permissão Inicial
-
-                // Permissões dos arquivos ou pastas que estão dentro da pasta que foi editada (permissão)
-                $arquivos = ItensCloud::wherePertence($itenscloud->id)->select('id', 'pertence');
-
-                if ($arquivos->count() > 0) {
-                    foreach ($arquivos->get() as $arquivoAtual) {
-                        $arquivoAtual->Permissoes()->sync($permissoes);
-                        $arquivoAtual->recursivo($permissoes);
-                    }
-                }
-
-                DB::commit();
-                return response()->json(['successo'], 201);
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response($e->getMessage(), 400);
             }
+
+            $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
+
+            $itenscloud->update($dados); // atualizo o item
+
+            //Permissão da pasta ou arquivo que está editando
+            $itenscloud->Permissoes()->sync($permissoes); // Permissão Inicial
+
+            // Permissões dos arquivos ou pastas que estão dentro da pasta que foi editada (permissão)
+            $arquivos = ItensCloud::wherePertence($itenscloud->id)->select('id', 'pertence');
+
+            if ($arquivos->count() > 0) {
+                foreach ($arquivos->get() as $arquivoAtual) {
+                    $arquivoAtual->Permissoes()->sync($permissoes);
+                    $arquivoAtual->recursivo($permissoes);
+                }
+            }
+
+            DB::commit();
+            return response()->json(['successo'], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response($e->getMessage(), 400);
         }
     }
 

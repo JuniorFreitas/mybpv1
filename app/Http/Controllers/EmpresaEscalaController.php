@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\AssociarEscalasRequest;
+use App\Http\Requests\Cadastros\StoreEmpresaEscalaRequest;
+use App\Http\Requests\Cadastros\UpdateEmpresaEscalaRequest;
 use App\Models\EmpresaEscala;
 use App\Models\OcorrenciaJornada;
 use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class EmpresaEscalaController extends Controller {
@@ -35,52 +37,32 @@ class EmpresaEscalaController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-        $this->authorize('controle_ponto_escalas_insert');
-        $dados = $request->input();
+    public function store(StoreEmpresaEscalaRequest $request) {
+        try {
+            \DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3',
-            'inicio' => 'required|min:10',
-            'jornadas' => 'required|array|min:1',
-        ]);
+            $escala = EmpresaEscala::create([
+                'descricao'=>$request->descricao,
+                'inicio'=>(new DataHora($request->inicio))->dataInsert(),
+            ]); //model raiz
 
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar a escala',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                \DB::beginTransaction();
-
-                $escala = EmpresaEscala::create([
-                    'descricao'=>$request->descricao,
-                    'inicio'=>(new DataHora($request->inicio))->dataInsert(),
-                ]); //model raiz
-
-                foreach ($request->jornadas as $jornada){
-                    $modelJornada = $escala->Jornadas()->create($jornada);
-                    //periodos
-                    if(isset($jornada['periodos']) && $jornada['ocorrencia_id']!=OcorrenciaJornada::FOLGA){
-                        foreach ($jornada['periodos'] as $periodo){
-                            $modelJornada->Periodos()->create($periodo);
-                        }
+            foreach ($request->jornadas as $jornada){
+                $modelJornada = $escala->Jornadas()->create($jornada);
+                //periodos
+                if(isset($jornada['periodos']) && $jornada['ocorrencia_id']!=OcorrenciaJornada::FOLGA){
+                    foreach ($jornada['periodos'] as $periodo){
+                        $modelJornada->Periodos()->create($periodo);
                     }
                 }
-
-                \DB::commit();
-
-                return response()->json($escala, 201);
-
-            }catch (\Exception $e){
-                \DB::rollBack();
-                return response()->json(['msg' => $e->getMessage()], 400);
             }
 
+            \DB::commit();
 
-            return response()->json([], 200);
+            return response()->json($escala, 201);
+
+        }catch (\Exception $e){
+            \DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 
@@ -115,87 +97,65 @@ class EmpresaEscalaController extends Controller {
      * @param \App\Models\EmpresaEscala $escala
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EmpresaEscala $escala) {
-        $this->authorize('controle_ponto_escalas_update');
-        $dados = $request->input();
+    public function update(UpdateEmpresaEscalaRequest $request, EmpresaEscala $escala) {
+        try {
+            \DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3',
-            'inicio' => 'required|min:10',
-            'jornadas' => 'required|array|min:1',
-        ]);
+            $escala->update([
+                'descricao'=>$request->descricao,
+                'inicio'=>(new DataHora($request->inicio))->dataInsert(),
+            ]); //model raiz
 
+            // delete Jornadas..
+            $escala->Jornadas()->whereIn('id',$request->jornadasDelete)->delete();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar a escala',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                \DB::beginTransaction();
+            foreach ($request->jornadas as $jornada){
+                if($jornada['id']==null){
+                    $modelJornada = $escala->Jornadas()->create($jornada);
+                    //periodos
+                    if(isset($jornada['periodos']) && $jornada['ocorrencia_id']!=OcorrenciaJornada::FOLGA){
+                        foreach ($jornada['periodos'] as $periodo){
+                            $modelJornada->Periodos()->create($periodo);
+                        }
+                    }
 
-                $escala->update([
-                    'descricao'=>$request->descricao,
-                    'inicio'=>(new DataHora($request->inicio))->dataInsert(),
-                ]); //model raiz
+                }else{
+                    $modelJornada = $escala->Jornadas()->where('id',$jornada['id'])->first();
 
-                // delete Jornadas..
-                $escala->Jornadas()->whereIn('id',$request->jornadasDelete)->delete();
+                    //delete Periodos... (se tiver nessa jornada)
+                    $modelJornada->Periodos()->whereIn('id',$request->periodosDelete)->delete();
 
-                foreach ($request->jornadas as $jornada){
-                    if($jornada['id']==null){
-                        $modelJornada = $escala->Jornadas()->create($jornada);
-                        //periodos
-                        if(isset($jornada['periodos']) && $jornada['ocorrencia_id']!=OcorrenciaJornada::FOLGA){
-                            foreach ($jornada['periodos'] as $periodo){
+                    $modelJornada->update($jornada);
+                    if($modelJornada->ocorrencia_id==OcorrenciaJornada::FOLGA){ // se é folga, apagar todos os periodos
+                        $modelJornada->Periodos()->delete();
+                    }
+                    //periodos
+                    if(isset($jornada['periodos']) && $modelJornada->ocorrencia_id!=OcorrenciaJornada::FOLGA){
+                        foreach ($jornada['periodos'] as $periodo){
+                            if($periodo['id']==null){
                                 $modelJornada->Periodos()->create($periodo);
-                            }
-                        }
+                            }else{
 
-                    }else{
-                        $modelJornada = $escala->Jornadas()->where('id',$jornada['id'])->first();
-
-                        //delete Periodos... (se tiver nessa jornada)
-                        $modelJornada->Periodos()->whereIn('id',$request->periodosDelete)->delete();
-
-                        $modelJornada->update($jornada);
-                        if($modelJornada->ocorrencia_id==OcorrenciaJornada::FOLGA){ // se é folga, apagar todos os periodos
-                            $modelJornada->Periodos()->delete();
-                        }
-                        //periodos
-                        if(isset($jornada['periodos']) && $modelJornada->ocorrencia_id!=OcorrenciaJornada::FOLGA){
-                            foreach ($jornada['periodos'] as $periodo){
-                                if($periodo['id']==null){
-                                    $modelJornada->Periodos()->create($periodo);
-                                }else{
-
-                                    $modelPeriodo = $modelJornada->Periodos()->where('id',$periodo['id'])->first();
-                                    if($modelPeriodo){
-                                        $modelPeriodo->update($periodo);
-                                    }
-
+                                $modelPeriodo = $modelJornada->Periodos()->where('id',$periodo['id'])->first();
+                                if($modelPeriodo){
+                                    $modelPeriodo->update($periodo);
                                 }
+
                             }
                         }
-
                     }
 
                 }
 
-
-
-                \DB::commit();
-
-                return response()->json($escala, 201);
-
-            }catch (\Exception $e){
-                \DB::rollBack();
-                return response()->json(['msg' => $e->getMessage()], 400);
             }
 
+            \DB::commit();
 
-            return response()->json([], 200);
+            return response()->json($escala, 201);
+
+        }catch (\Exception $e){
+            \DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 
@@ -248,34 +208,17 @@ class EmpresaEscalaController extends Controller {
         ]);
     }
 
-    public function assosicarEscalas(Request $request) {
-
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'escala_id' => Rule::requiredIf(empty($request->escalasSelecionadas)),
-            'escalasSelecionadas' => Rule::requiredIf(is_null($request->escala_id)),
-            'funcionariosSelecionados' => 'required|array|min:1',
-        ]);
-
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao associar escalas',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            foreach ($request->funcionariosSelecionados as $funcnionario_id) {
-                $user = User::find($funcnionario_id);
-                if (is_null($request->escala_id) && count($request->escalasSelecionadas)>0) {
-                    $user->EscalasFuncionario()->sync($request->escalasSelecionadas);
-                } else {
-                    $user->EscalasFuncionario()->detach();
-                }
+    public function assosicarEscalas(AssociarEscalasRequest $request) {
+        foreach ($request->funcionariosSelecionados as $funcnionario_id) {
+            $user = User::find($funcnionario_id);
+            if (is_null($request->escala_id) && count($request->escalasSelecionadas)>0) {
+                $user->EscalasFuncionario()->sync($request->escalasSelecionadas);
+            } else {
+                $user->EscalasFuncionario()->detach();
             }
-
-
-            return response()->json([], 200);
         }
+
+        return response()->json([], 200);
     }
 
     public function atualizarEscalas(Request $request) {

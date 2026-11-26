@@ -22,9 +22,7 @@ class ZapNotificacaoDelayTest extends TestCase
     {
         Queue::fake();
 
-        putenv('AMBIENTE=local');
-        $_ENV['AMBIENTE'] = 'local';
-        $_SERVER['AMBIENTE'] = 'local';
+        config(['app.ambiente' => 'local']);
 
         $gate = Mockery::mock(WhatsappNotificationGateService::class);
         $gate->shouldReceive('podeEnviar')->once()->andReturn(true);

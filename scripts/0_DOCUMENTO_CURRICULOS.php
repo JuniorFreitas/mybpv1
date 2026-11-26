@@ -72,7 +72,12 @@ try {
     (new ZapNotificacao())->enviar([
         'enviado_id' => $user_id,
         'telefone' => '5598999023762',
-        'mensagem' => 'Importação realizada com sucesso das fotos de '. $count .' colaboradores da Empresa ' . $empresa_id
+        'mensagem' => 'Importação realizada com sucesso das fotos de '. $count .' colaboradores da Empresa ' . $empresa_id,
+        '_whatsapp_meta' => ZapNotificacao::meta(
+            \App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp::AdmissaoDocumentos,
+            (int) $empresa_id,
+            (int) $user_id,
+        ),
     ]);
     return response()->json(['msg' => 'Importação realizada com sucesso'], 201);
 } catch (\Exception $e) {

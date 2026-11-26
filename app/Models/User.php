@@ -665,9 +665,19 @@ class User extends Authenticatable
         });
     }
 
-    public function enviaWhatsApp()
+    /**
+     * Empresa com WhatsApp liberado (mesmo critério do gate).
+     * Preferir WhatsappNotificationGateService::podeEnviar() para checagem por tipo/módulo.
+     */
+    public function enviaWhatsApp(): bool
     {
-        return $this->EmpresaConfiguracoes->envia_whatsapp;
+        $empresaId = (int) ($this->empresa_id ?? 0);
+        if ($empresaId <= 0) {
+            return false;
+        }
+
+        return app(\App\Domain\Whatsapp\Services\WhatsappNotificationGateService::class)
+            ->empresaPermiteWhatsapp($empresaId);
     }
 
     public function temPrivilegioGestaoRh(): bool

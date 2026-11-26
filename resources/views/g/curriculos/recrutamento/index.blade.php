@@ -385,7 +385,7 @@
                             </div>
                         </div>
 
-                        <template v-if="permite_envio_whatsapp && telefonePrincipal && telefonePrincipal.tipo === 'whatsapp'">
+                        <template v-if="podeMostrarWhatsappRecrutamento && telefonePrincipal && telefonePrincipal.tipo === 'whatsapp'">
                             <div class="col-12 col-md-4" v-if="form_feedback.contato_realizado">
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label" for="rec-modal-whatsapp">Notificação WhatsApp <span class="text-danger">*</span></label>

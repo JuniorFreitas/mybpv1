@@ -72,6 +72,12 @@ return [
 
     'middleware' => ['web', 'auth'],
 
+    /** Logins (CSV) com Gate viewHorizon além do papel plataforma. */
+    'allowed_logins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('HORIZON_ALLOWED_LOGINS', ''))
+    ))),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Wait Time Thresholds
@@ -178,9 +184,10 @@ return [
     ],
 
     'environments' => [
+        // PERF-MEM-001: container web ~700MB — 10×128MB estoura hard limit; 2 réplicas × 3 = 6 workers no cluster.
         'production' => [
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 3,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],

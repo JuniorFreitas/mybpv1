@@ -2,45 +2,48 @@
 
 namespace App\Scopes;
 
-use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
+/**
+ * Isola por cliente_id usando o tenant da empresa (ClientesEmpresa).
+ *
+ * O pivot cliente_funcionarios só restringe a um cliente quando esse ID
+ * pertence a ClientesEmpresa — pivot sujo/órfão não pode vazar outro tenant.
+ */
 class ScopeClientesEmpresa implements Scope
 {
-    /**
-     * Apply the scope to a given Eloquent query builder.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $builder
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @return void
-     */
     public function apply(Builder $builder, Model $model)
     {
-        /*
-         * USER (TIPOS)
-         * EMPRESA CLIENTE (USER,USER)
-         * FUNCIONARIO CLIENTE (USER,USER)
-         *
-         * CLIENTE PERTENCE A EMPRESA
-         *              FUNCIONARIO PERTENCE A CLIENTE
-         *
-         * */
+        $user = auth()->user();
 
-        //Todos os funcionarios do Cliente
-//        if(auth()->user()->tipo == 'Funcionario'){
+        if (!$user) {
+            if (app()->runningInConsole()) {
+                return;
+            }
 
-        $cliente = auth()->user()->ClienteFuncionarios->first();
+            $builder->whereRaw('0 = 1');
 
-        //Se for funcionario do Cliente
-        if($cliente){
-//            $cliente = auth()->user()->ClienteFuncionarios->first();
-            return $builder->where('cliente_id', $cliente->id);
+            return;
         }
 
-        //Todos os clientes da empresa
-        return $builder->whereIn('cliente_id', auth()->user()->ClientesEmpresa->pluck('id'));
+        $idsPermitidos = $user->ClientesEmpresa->pluck('id');
 
+        if ($idsPermitidos->isEmpty()) {
+            $builder->whereRaw('0 = 1');
+
+            return;
+        }
+
+        $clientePivot = $user->ClienteFuncionarios->first();
+
+        if ($clientePivot && $idsPermitidos->contains($clientePivot->id)) {
+            $builder->where('cliente_id', $clientePivot->id);
+
+            return;
+        }
+
+        $builder->whereIn('cliente_id', $idsPermitidos);
     }
 }

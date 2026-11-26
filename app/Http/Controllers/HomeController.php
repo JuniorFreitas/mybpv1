@@ -60,7 +60,8 @@ class HomeController extends Controller
         if ($dono) {
             $disco = 'disco-exportacao';
             if (Storage::disk($disco)->exists($arquivo)) {
-                return \Storage::disk($disco)->response($arquivo);
+                // attachment (não inline) — CSV/PDF não abrem em nova aba
+                return Storage::disk($disco)->download($arquivo, basename((string) $arquivo));
             }
         }
         abort(404);

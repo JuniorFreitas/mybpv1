@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreFeriadoRequest;
+use App\Http\Requests\Cadastros\UpdateFeriadoRequest;
 use App\Models\Feriado;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -32,27 +34,13 @@ class FeriadoController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-
-        $this->authorize('controle_ponto_feriados_insert');
-        $dados = $request->input();
+    public function store(StoreFeriadoRequest $request) {
+        $dados = $request->all();
         $data = new DataHora($request->data);
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3',
-            'data' => 'required',
-            'ativo' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar feriado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $dados['data'] = $data->dataInsert();
-            Feriado::create($dados);
-            return response()->json([], 201);
-        }
+        $dados['data'] = $data->dataInsert();
+        Feriado::create($dados);
+        return response()->json([], 201);
     }
 
     /**
@@ -83,26 +71,13 @@ class FeriadoController extends Controller {
      * @param \App\Models\Feriado $feriado
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Feriado $feriado) {
-        $this->authorize('controle_ponto_feriados_update');
-        $dados = $request->input();
+    public function update(UpdateFeriadoRequest $request, Feriado $feriado) {
+        $dados = $request->all();
         $data = new DataHora($dados['data']);
         $dados['data'] = $data->dataInsert();
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3',
-            'data' => 'required',
-            'ativo' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a feriado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $feriado->update($dados);
-            return response()->json([], 201);
-        }
+        $feriado->update($dados);
+        return response()->json([], 201);
     }
 
     /**

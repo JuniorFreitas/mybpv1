@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\Chat\MensagemChatEvent;
+use App\Http\Requests\Operacional\StoreMensagemChatRequest;
 use App\Models\MensagemChat;
 use App\Models\User;
 use Event;
@@ -34,20 +35,7 @@ class MensagemChatController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, User $empresa) {
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'para_id' => 'min:1|numeric',
-            'grupo_id' => 'nullable|min:1|umeric',
-            'mensagem' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao enviar a mensagem',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+    public function store(StoreMensagemChatRequest $request, User $empresa) {
         try {
             \DB::beginTransaction();
 

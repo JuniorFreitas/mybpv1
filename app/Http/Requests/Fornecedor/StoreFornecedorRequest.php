@@ -3,28 +3,46 @@
 namespace App\Http\Requests\Fornecedor;
 
 use App\Models\Fornecedor;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreFornecedorRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('administracao_fornecedores_insert');
+        return (bool) $this->user()?->can('administracao_fornecedores_insert');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'ativo' => filter_var($this->ativo ?? true, FILTER_VALIDATE_BOOLEAN),
+            'cadastrou' => auth()->id(),
+            'empresa_id' => auth()->user()->empresa_id ?? null,
+        ]);
+
+        if ($this->has('servicos')) {
+            $servicos = $this->servicos;
+            foreach ($servicos as &$servico) {
+                $servico['ativo'] = filter_var($servico['ativo'] ?? true, FILTER_VALIDATE_BOOLEAN);
+            }
+            $this->merge(['servicos' => $servicos]);
+        }
     }
 
     public function rules(): array
     {
         $rules = [
             'tipo_pessoa' => 'required|in:' . Fornecedor::PESSOA_FISICA . ',' . Fornecedor::PESSOA_JURIDICA,
-            'contato' => 'required|string|min:2',
-            'uf' => 'required|string|size:2',
-            'logradouro' => 'required|string|min:3',
-            'bairro' => 'required|string|min:3',
-            'municipio' => 'required|string|min:3',
+            'contato' => 'required',
+            'uf' => 'required|min:2',
+            'logradouro' => 'required|min:3',
+            'bairro' => 'required|min:3',
+            'municipio' => 'required|min:3',
             'email' => 'required|email|unique:users,login',
-            'ativo' => 'boolean',
+            'ativo' => 'required',
             'telefones' => 'required|array|min:1',
-            'telefones.*.numero' => 'required|string',
             'anexos' => 'sometimes|array',
             'servicos' => 'sometimes|array',
             'servicos.*.nome' => 'required_with:servicos|string',
@@ -32,16 +50,11 @@ class StoreFornecedorRequest extends FormRequest
         ];
 
         if ($this->input('tipo_pessoa') == Fornecedor::PESSOA_JURIDICA) {
-            $rules = array_merge($rules, [
-                'cnpj' => 'required|string|min:18|unique:fornecedores,cnpj',
-                'razao_social' => 'required|string|min:2',
-                'nome_fantasia' => 'sometimes|string|min:2',
-            ]);
+            $rules['cnpj'] = 'required|min:18|unique:fornecedores,cnpj';
+            $rules['razao_social'] = 'required|min:2';
         } else {
-            $rules = array_merge($rules, [
-                'cpf' => 'required|string|min:14|unique:fornecedores,cpf',
-                'nome' => 'required|string|min:2',
-            ]);
+            $rules['cpf'] = 'required|min:14|unique:fornecedores,cpf';
+            $rules['nome'] = 'required|min:2';
         }
 
         return $rules;
@@ -58,19 +71,11 @@ class StoreFornecedorRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
+    protected function failedValidation(Validator $validator): void
     {
-        $this->merge([
-            'ativo' => filter_var($this->ativo ?? true, FILTER_VALIDATE_BOOLEAN),
-        ]);
-
-        // Converter ativo nos serviços
-        if ($this->has('servicos')) {
-            $servicos = $this->servicos;
-            foreach ($servicos as &$servico) {
-                $servico['ativo'] = filter_var($servico['ativo'] ?? true, FILTER_VALIDATE_BOOLEAN);
-            }
-            $this->merge(['servicos' => $servicos]);
-        }
+        throw new HttpResponseException(response()->json([
+            'msg' => 'Erro ao cadastrar Fornecedor',
+            'erros' => $validator->errors(),
+        ], 400));
     }
 }

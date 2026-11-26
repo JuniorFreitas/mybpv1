@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\ItemChecklistEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreChecklistsTarefaItemRequest;
+use App\Http\Requests\Operacional\UpdateChecklistsTarefaItemMembroRequest;
+use App\Http\Requests\Operacional\UpdateChecklistsTarefaItemRequest;
 use App\Models\ChecklistsTarefa;
 use App\Models\ChecklistsTarefaItem;
 use App\Models\ListaTarefa;
@@ -19,20 +22,9 @@ class ChecklistsTarefaItemController extends Controller
 {
     use GuardsWeeklyReportTenant;
 
-    public function store(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist)
+    public function store(StoreChecklistsTarefaItemRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa, $checklist);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar a item',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -60,23 +52,9 @@ class ChecklistsTarefaItemController extends Controller
         }
     }
 
-    public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist, ChecklistsTarefaItem $item)
+    public function update(UpdateChecklistsTarefaItemRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist, ChecklistsTarefaItem $item)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa, $checklist, $item);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'nullable|min:1',
-            'concluido' => 'boolean',
-            'datahora_entrega' => 'nullable|string',
-            'acao' => 'nullable|in:add,remove',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o item',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -143,21 +121,9 @@ class ChecklistsTarefaItemController extends Controller
         }
     }
 
-    public function updateMembro(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist, ChecklistsTarefaItem $item)
+    public function updateMembro(UpdateChecklistsTarefaItemMembroRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist, ChecklistsTarefaItem $item)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa, $checklist, $item);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'acao' => 'required|in:add,remove',
-            'user_id' => 'required|integer',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar membros do item',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         $membro = User::query()
             ->whereId($request->user_id)

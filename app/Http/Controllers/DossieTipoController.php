@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreDossieTipoRequest;
+use App\Http\Requests\Documentos\UpdateDossieTipoRequest;
 use App\Models\Arquivo;
 use App\Models\Sistema;
 use App\Models\User;
@@ -22,21 +24,12 @@ class DossieTipoController extends Controller
         return view('g.cadastros.dossietipos.index');
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreDossieTipoRequest $request): JsonResponse
     {
         $this->authorize('cadastro_dossie_tipos_insert');
 
-        $dadosValidados = \Validator::make($request->input(), $this->regrasValidacao());
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao cadastrar tipo de dossiê',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
-
         try {
-            $dados = $dadosValidados->validated();
+            $dados = $request->validated();
             $dados['modelo'] = $request->input('modelo', []);
             $dados['modeloDel'] = $request->input('modeloDel', []);
             $this->cadastroService->criar($dados, $this->empresaIdObrigatoria());
@@ -64,22 +57,12 @@ class DossieTipoController extends Controller
         }
     }
 
-    public function update(Request $request, $dossietipo): JsonResponse
+    public function update(UpdateDossieTipoRequest $request, $dossietipo): JsonResponse
     {
         $this->authorize('cadastro_dossie_tipos_update');
 
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, $this->regrasValidacao());
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao editar tipo de dossiê',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
-
         try {
-            $dados = $dadosValidados->validated();
+            $dados = $request->validated();
             $dados['modelo'] = $request->input('modelo', []);
             $dados['modeloDel'] = $request->input('modeloDel', []);
             $this->cadastroService->atualizar((int) $dossietipo, $dados, $this->empresaId());
@@ -169,24 +152,6 @@ class DossieTipoController extends Controller
         $this->authorize('cadastro_dossie_tipos');
 
         return Arquivo::anexoDelete(Arquivo::DISCO_DOSSIE, $arquivo);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function regrasValidacao(): array
-    {
-        $regras = [
-            'label' => 'required|string|max:255',
-            'tipo_modelo' => 'nullable|string|max:100',
-            'tipo_documento' => 'nullable|string|max:100',
-            'tem_modelo' => 'nullable|boolean',
-            'permite_assinatura' => 'required|boolean',
-            'ordem' => 'nullable|integer|min:0',
-            'ativo' => 'required|boolean',
-        ];
-
-        return $regras;
     }
 
     private function empresaId(): ?int

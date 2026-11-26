@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StoreAvaliadorTipoRequest;
+use App\Http\Requests\Avaliacao\UpdateAvaliadorTipoRequest;
 use App\Models\AvaliacaoAvaliadoresTipos;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class AvaliadorTipoController extends Controller
 {
@@ -20,26 +21,10 @@ class AvaliadorTipoController extends Controller
         return view('g.cadastros.avaliacoes-pj.avaliadortipo.index');
     }
 
-    public function store(Request $request)
+    public function store(StoreAvaliadorTipoRequest $request)
     {
         $this->authorize('cadastro_avaliador_tipo_insert');
         $dados = $request->input();
-        $label = $dados['label'];
-
-        $arrayValidacao = [
-            'label' => [
-                'required',
-                'min:3'
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar tipo de avaliador',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -69,25 +54,11 @@ class AvaliadorTipoController extends Controller
         return $avaliadortipo;
     }
 
-    public function update(Request $request, AvaliacaoAvaliadoresTipos $avaliadortipo)
+    public function update(UpdateAvaliadorTipoRequest $request, AvaliacaoAvaliadoresTipos $avaliadortipo)
     {
         $this->authorize('cadastro_avaliador_tipo_update');
 
         $dados = $request->input();
-        $arrayValidacao = [
-            'label' => [
-                'required',
-                'min:3'
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao editar tipo de avaliador',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();

@@ -192,7 +192,7 @@
                     type="button"
                     class="btn btn-sm btn-success"
                     :disabled="preload || !dados.length"
-                    @click.prevent="exportaExcel()"
+                    @click.prevent="exportarExcel()"
                 >
                     <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
@@ -343,12 +343,12 @@
     </div>
 </template>
 <script>
-import ExportacaoMixin from '../../../mixins/Exportacoes'
 import ChartsBar from '../../Charts/Bar.vue'
 import ChartsDoughnut from '../../Charts/Doughnut.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import DateRangeFilter from '../../DateRangeFilter.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import { useExportacao } from '../../../composables/useExportacao'
 
 const CORES = [
     '#174257',
@@ -364,13 +364,16 @@ const CORES = [
 ]
 
 export default {
-    mixins: [ExportacaoMixin],
     components: {
         ChartsBar,
         ChartsDoughnut,
         ComboboxAutoComplete,
         DateRangeFilter,
         FiltroListagem
+    },
+    setup() {
+        const { preloadExportacao, exportaExcel } = useExportacao()
+        return { preloadExportacao, exportaExcel }
     },
     data() {
         return {
@@ -516,6 +519,9 @@ export default {
         }
     },
     methods: {
+        async exportarExcel() {
+            await this.exportaExcel(this.urlExportacao, this.paramsExport)
+        },
         payloadFiltros() {
             return {
                 ...this.filtrar,

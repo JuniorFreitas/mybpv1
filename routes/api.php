@@ -45,7 +45,7 @@ Route::middleware(['apitoken:whatsapp', 'throttle:api-integracao-spa'])->post('e
 
     //    'json' => [
     //        "enviado_id" => 104,
-    //        "telefone" => env('APP_ENV') == 'local' ? "5598999023762" : $dados['telefone'],
+    //        "telefone" => config('app.env') == 'local' ? "5598999023762" : $dados['telefone'],
     //        "mensagem" => $dados['mensagem'],
     //        "sistema" => "sgi"
     //    ]

@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cih\AprovarCihRequest;
+use App\Http\Requests\Cih\StoreCihRequest;
+use App\Http\Requests\Cih\StoreTipoCihRequest;
+use App\Http\Requests\Cih\UpdateTipoCihRequest;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
 use App\Jobs\JobExportaCihCsvFinal;
@@ -21,7 +25,6 @@ use App\Services\Cih\CihLotacaoResolver;
 use App\Services\Cih\CihQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class CihController extends Controller
@@ -52,7 +55,7 @@ class CihController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request): \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
+    public function store(StoreCihRequest $request): \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
     {
         $this->authorize('admissao_cih_lancar');
         $dados = $request->input();
@@ -61,38 +64,6 @@ class CihController extends Controller
         $dados['outra_tag'] = $dados['tag_id'] == 0 ? $dados['outra_tag'] : 0;
         $dados['outra_area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : null;
         $dados['varios_colaboradores'] = count($dados['colaboradores']) > 1;
-
-        $dadosValidados = \Validator::make($dados, [
-            'tag_id' => 'required',
-            'outra_tag' => [
-                function ($attribute, $value, $fail) use ($dados) {
-                    if ($dados['tag_id'] == 0 && $value == '') {
-                        $fail('O campo especifique deve ser preenchido.');
-                    }
-                }],
-            'colaboradores' => 'required|array|min:1',
-//            'feedback_id' => 'required_if:varios_colaboradores,0',
-//            'colaboradores_avulso' => [
-//                function ($attribute, $value, $fail) use ($dados) {
-//                    if ($dados['varios_colaboradores'] == 1 && $value == '') {
-//                        $fail('Preencha o campo informando os colaboradores.');
-//                    }
-//                }],
-            'acao' => 'required',
-            'anexos' => [function ($attribute, $value, $fail) use ($dados) {
-                $CihTag = CihTag::where('id', $dados['tag_id'])->first();
-                if ($CihTag && $CihTag->anexos_obrigatorios && count($value) == 0) {
-                    $fail('É necessário anexar o(s) arquivo(s) obrigatório(s) para a tipo selecionado.');
-                }
-            }]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             $usuario = auth()->user();
@@ -228,7 +199,7 @@ class CihController extends Controller
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function aprovar(Request $request, Cih $cih)
+    public function aprovar(AprovarCihRequest $request, Cih $cih)
     {
         $this->authorize('admissao_cih_aprovar');
         $dados = $request->input();
@@ -242,17 +213,6 @@ class CihController extends Controller
                     return response()->json([
                         'msg' => 'Você só pode aprovar CIH sob sua responsabilidade.',
                     ], 403);
-                }
-
-                $dadosValidados = \Validator::make($dados, [
-                    'status' => 'required',
-                ]);
-
-                if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-                    return response()->json([
-                        'msg' => 'Erro ao Salvar Informações',
-                        'erros' => $dadosValidados->errors()
-                    ], 400);
                 }
 
                 $cih->update([
@@ -276,17 +236,6 @@ class CihController extends Controller
                     'cih_id' => $cih->id
                 ];
             } else {
-                $dadosValidados = \Validator::make($dados, [
-                    'resposta_rh' => 'required',
-                ]);
-
-                if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-                    return response()->json([
-                        'msg' => 'Erro ao Salvar Informações',
-                        'erros' => $dadosValidados->errors()
-                    ], 400);
-                }
-
                 $cih->update([
                     'user_rh_id' => auth()->id(),
                     'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
@@ -552,25 +501,9 @@ class CihController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function tipoCihStore(Request $request)
+    public function tipoCihStore(StoreTipoCihRequest $request)
     {
-        $dados = $request->input();
-
-        $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        });
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao criar novo tipo cih',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -602,25 +535,9 @@ class CihController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function tipoCihUpdate(Request $request, CihTag $tipocih)
+    public function tipoCihUpdate(UpdateTipoCihRequest $request, CihTag $tipocih)
     {
-        $dados = $request->input();
-
-        $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        })->ignore($tipocih->id);
-
-        $dadosValidados = \Validator::make($dados, [
-            'label' => ['required', $regra]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar novo tipo cih',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();

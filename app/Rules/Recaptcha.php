@@ -3,54 +3,43 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Recaptcha implements Rule
 {
-    /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function passes($attribute, $value): bool
     {
-        //
-    }
+        $secret = (string) config('services.recaptcha.secret_key', '');
 
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
-     */
-    public function passes($attribute, $value)
-    {
-        $data = array(
-            'secret'   => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $value
-        );
+        if ($secret === '' || !is_string($value) || $value === '') {
+            return false;
+        }
 
         try {
-            $verify = curl_init();
-            curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($verify, CURLOPT_POST, true);
-            curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($verify);
-            return json_decode($response)->success;
-        } catch (\Exception $e) {
-            return response()->json(['msg' => 'Falha na vericação de Robô']);
+            $response = Http::asForm()
+                ->timeout(10)
+                ->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => $secret,
+                    'response' => $value,
+                ]);
+
+            if (!$response->successful()) {
+                return false;
+            }
+
+            return (bool) data_get($response->json(), 'success', false);
+        } catch (\Throwable $e) {
+            Log::warning('Falha na verificação reCAPTCHA', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
-    public function message()
+    public function message(): string
     {
-        return 'Falha na vericação de Robô';
+        return 'Falha na verificação de Robô';
     }
 }

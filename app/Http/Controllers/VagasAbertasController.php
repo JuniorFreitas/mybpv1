@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreVagasAbertasRequest;
+use App\Http\Requests\Cadastros\UpdateVagasAbertasRequest;
 use App\Models\Municipio;
 use App\Models\Projeto;
 use App\Models\Simulado;
@@ -47,28 +49,14 @@ class VagasAbertasController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreVagasAbertasRequest $request)
     {
-        $this->authorize('cadastro_vagas_abertas_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'vaga_id' => 'required',
-            'municipio_id' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
+        try {
+            DB::beginTransaction();
 
-        } else {
-            try {
-                DB::beginTransaction();
-
-                $vagas_aberta = VagasAbertas::create($dados);
+            $vagas_aberta = VagasAbertas::create($dados);
 
                 if (isset($dados['simulados'])) {
                     foreach ($dados['simulados'] as $simulado) {
@@ -118,12 +106,11 @@ class VagasAbertasController extends Controller
                 DB::commit();
                 return response()->json([], 201);
 
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'msg' => $e->getMessage(),
+            ], 400);
         }
     }
 
@@ -206,24 +193,11 @@ class VagasAbertasController extends Controller
      * @param \App\Models\VagasAbertas $vagas_aberta
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, VagasAbertas $vagas_aberta)
+    public function update(UpdateVagasAbertasRequest $request, VagasAbertas $vagas_aberta)
     {
-        $this->authorize('cadastro_vagas_abertas_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'vaga_id' => 'required',
-            'municipio_id' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
+        {
             if ($erroProjetosDelete = $this->validarProjetosDelete($dados['projetosDelete'] ?? [], $vagas_aberta->id)) {
                 return $erroProjetosDelete;
             }

@@ -1,17 +1,23 @@
 .git
 .github
 .idea
+.harness
+.cursor
+.opencode
+.planning
+.playwright-cli
+.phpunit.cache
 
+.env
 .env.*
+!.env.example
 .DS_Store
 .*ignore
 *.log
 *.pid
-# docker-compose.*
+
 phpunit.dusk.xml
 phpunit.xml
-# Dockerfile
-
 tests
 node_modules
 resources/views/themes/*/node_modules
@@ -20,8 +26,3 @@ storage/framework/cache/**
 storage/framework/sessions/**
 storage/framework/views/**
 .deploy/storage
-.cursor
-.opencode
-.phpunit.cache
-.planning
-.playwright-cli

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreMunicipioRequest;
+use App\Http\Requests\Cadastros\UpdateMunicipioRequest;
 use App\Models\Municipio;
 use Illuminate\Http\Request;
 
@@ -33,26 +35,11 @@ class MunicipioController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreMunicipioRequest $request)
     {
-        $this->authorize('municipios_insert');
-        $dados = $request->input();
-        $dados['capital'] = $dados['capital'] =='true' ? true:false;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'uf' => 'required|min:2',
-            'capital' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar municipio',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            Municipio::create($dados);
-            return response()->json([], 201);
-        }
+        $dados = $request->all();
+        Municipio::create($dados);
+        return response()->json([], 201);
     }
 
     /**
@@ -85,27 +72,11 @@ class MunicipioController extends Controller
      * @param  \App\Models\Municipio $municipio
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Municipio $municipio)
+    public function update(UpdateMunicipioRequest $request, Municipio $municipio)
     {
-        $this->authorize('municipios_update');
-
-        $dados = $request->input();
-        $dados['capital'] = $dados['capital'] =='true' ? true:false;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'uf' => 'required|min:2',
-            'capital' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a municipio',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $municipio->update($dados);
-            return response()->json([], 201);
-        }
+        $dados = $request->all();
+        $municipio->update($dados);
+        return response()->json([], 201);
     }
 
     /**

@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
+use App\Http\Requests\Cadastros\RecuperaSenhaRequest;
+use App\Http\Requests\Cadastros\StoreUserRequest;
+use App\Http\Requests\Cadastros\UpdatePerfilUsuarioRequest;
+use App\Http\Requests\Cadastros\UpdateUserRequest;
 use App\Http\Requests\WhatsappPreferenciasUsuarioRequest;
 use App\Jobs\JobBoasVindas;
 use App\Jobs\JobRecuperaSenha;
@@ -68,26 +72,9 @@ class UserController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $this->authorize('usuario_usuarios_insert');
-        $dados = $request->input();
-        $dados['login'] = strtolower(trim($dados['login']));
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'login' => 'required|email:rfc,dns',
-            'tipo' => 'required',
-            'ativo' => 'required|boolean',
-            'empresa_id' => 'required'
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar usuário',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 //            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
         $password = \Str::random(8);
         $dados['password'] = bcrypt($password);
@@ -168,30 +155,14 @@ class UserController extends Controller
     }
 
 
-    public function update(Request $request, User $usuario)
+    public function update(UpdateUserRequest $request, User $usuario)
     {
-        $this->authorize('usuario_usuarios_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['login'] = strtolower(trim($dados['login']));
+        $dados = $request->all();
 
-        // Validacao para ajax sem dar erro de HTTP (402)
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'login' => 'required|email:rfc,dns',
-            'ativo' => 'required|boolean',
-            'tipo' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar os dados do usuário',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                if (isset($dados['user_recebe_email'])) {
+            if (isset($dados['user_recebe_email'])) {
                     if (count($usuario->UserRecebeEmail) == 0) {
                         unset($dados['user_recebe_email'][0]);
                         foreach ($dados['user_recebe_email'] as $index => $email) {
@@ -225,7 +196,6 @@ class UserController extends Controller
             }
 
             return response()->json([], 201);
-        }
     }
 
     /**
@@ -242,61 +212,42 @@ class UserController extends Controller
 
     public function getUsuario()
     {
+        $user = auth()->user();
+        $clienteFuncionario = $user->ClienteFuncionarios->first();
 
-//        $usuario = User::find(auth()->id(), ['id', 'cliente_id'])->load('Cliente:id,area_id');
-        $cliente = auth()->user()->ClienteFuncionarios->first();
-        //$cliente = auth()->user()->ClienteFuncionarios()->where('cliente_id',auth()->id())->first();
+        // Respeita o global scope de Cliente (ClientesEmpresa). Se o pivot
+        // cliente_funcionarios apontar para cliente fora do tenant, a relação
+        // vem null e area_id cai em 0 — evita 500 sem vazar área cross-tenant.
+        $areaId = (int) ($clienteFuncionario?->Cliente?->area_id ?? 0);
 
-        $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first();
-        $temfilial = ClienteFilial::select('id')->whereEmpresaId(auth()->user()->empresa_id)->whereAtivo(true)->first();
+        $whatsappLiberado = ClienteConfig::select('envia_whatsapp')
+            ->whereClienteId($user->empresa_id)
+            ->first();
+        $temfilial = ClienteFilial::select('id')
+            ->whereEmpresaId($user->empresa_id)
+            ->whereAtivo(true)
+            ->first();
+        // empresa_id do usuário autenticado; scope aplica, sem ID externo.
+        $apelido = Cliente::query()
+            ->whereKey($user->empresa_id)
+            ->value('apelido');
 
-        if ($cliente) {
-            $usuario = [
-                'cliente_id' => auth()->user()->empresa_id,
-                'area_id' => $cliente->Cliente->area_id,
-                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
-                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
-                'empresa_id' => auth()->user()->empresa_id,
-                'user_id' => auth()->id(),
-                'nome' => auth()->user()->nome,
-                'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
-                'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
-                'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
-                'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
-                'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
-            ];
-
-        } else {
-//            $usuario = auth()->user()->ClientesEmpresa()->select(['id'])->with('Cliente:id,area_id')->get();
-            $usuario = [
-                'cliente_id' => auth()->user()->empresa_id,
-                'area_id' => 0,
-                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
-                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
-                'empresa_id' => auth()->user()->empresa_id,
-                'user_id' => auth()->id(),
-                'nome' => auth()->user()->nome,
-                'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
-                'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
-                'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
-                'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
-                'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
-            ];
-        }
-
-//        \Cache::pull("getUsuario_" . auth()->id());
-
-        /*if (!\Cache::get("getUsuario_" . auth()->id())) {
-            \Cache::rememberForever("getUsuario_" . auth()->id(), function () use ($usuario) {
-                return $usuario;
-            });
-        }
-
-        $userCache = \Cache::get("getUsuario_" . auth()->id());*/
+        $usuario = [
+            'cliente_id' => $user->empresa_id,
+            'area_id' => $areaId,
+            'config_empresa' => $user->EmpresaPontoConfiguracoes,
+            'empresa_configuracoes' => $user->EmpresaConfiguracoes,
+            'empresa_id' => $user->empresa_id,
+            'user_id' => $user->id,
+            'nome' => $user->nome,
+            'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
+            'podeConfigurarWhatsapp' => $user->can('configuracao_whatsapp') || $user->can('administracao_clientes'),
+            'podeConfigurarPreferenciasWhatsapp' => $user->can('preferencias_notificacao_whatsapp'),
+            'temFilial' => (bool) $temfilial,
+            'apelido' => $apelido,
+            'cnpjs' => (new Cliente())->Cnpjs((int) $user->empresa_id),
+            'gestao_rh' => $user->can('privilegio_gestao_rh'),
+        ];
 
         return response()->json($usuario, 200);
     }
@@ -435,28 +386,10 @@ class UserController extends Controller
         return response()->json(['user' => $user]);
     }
 
-    public function atualizaPerfilUsuario(Request $request, $id)
+    public function atualizaPerfilUsuario(UpdatePerfilUsuarioRequest $request, $id)
     {
-        if ((int) auth()->id() !== (int) $id) {
-            return response()->json(['msg' => 'Não autorizado'], 403);
-        }
-
         $usuario = User::findOrFail($id);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'nome' => 'required|min:3',
-            'login' => 'required|min:3',
-            'foto_perfil' => 'sometimes|array',
-            'foto_perfilDel' => 'sometimes|array',
-        ]);
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar os dados do usuário',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-
-        $dados = $dadosValidados->validated();
+        $dados = $request->validated();
         $usuario->update([
             'nome' => $dados['nome'],
             'login' => $dados['login'],
@@ -522,28 +455,8 @@ class UserController extends Controller
         return response()->json(['msg' => $mensagemGenerica], 200);
     }
 
-    public function recuperaSenhaPost(Request $request)
+    public function recuperaSenhaPost(RecuperaSenhaRequest $request)
     {
-        // Validar a nova senha antes de processar
-        $dadosValidados = \Validator::make($request->all(), [
-            'novaSenha' => [
-                'required',
-                'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
-            ],
-        ], [
-            'novaSenha.required' => 'A nova senha é obrigatória.',
-            'novaSenha.min' => 'A senha deve ter no mínimo 8 caracteres.',
-            'novaSenha.regex' => 'A senha deve conter pelo menos: 1 letra minúscula, 1 maiúscula, 1 número e 1 caractere especial (@$!%*?&).',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro na validação da senha',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-
         $recuperacao = RecuperacaoSenha::whereToken($request->token)
             ->where('recuperado', false)
             ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())

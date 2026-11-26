@@ -116,7 +116,7 @@
                     type="button"
                     class="btn btn-sm btn-success"
                     :disabled="preload || preloadExportacao || !dados.length"
-                    @click.prevent="exportaExcel()"
+                    @click.prevent="exportarExcel()"
                 >
                     <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
@@ -186,16 +186,20 @@
     </div>
 </template>
 <script>
-import ExportacaoMixin from '../../../mixins/Exportacoes'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import { useExportacao } from '../../../composables/useExportacao'
+import { usePreload } from '../../../composables/usePreload'
 
 export default {
-    mixins: [ExportacaoMixin],
     components: { ComboboxAutoComplete, FiltroListagem },
+    setup() {
+        const { preloadExportacao, exportaExcel, exportaPdf } = useExportacao()
+        const { preload } = usePreload(false)
+        return { preloadExportacao, exportaExcel, exportaPdf, preload }
+    },
     data() {
         return {
-            preload: false,
             dados: [],
             lista_cargos: [],
             lista_funcao: [],
@@ -255,6 +259,9 @@ export default {
         }
     },
     methods: {
+        async exportarExcel() {
+            await this.exportaExcel(this.urlExportacao, this.paramsExport)
+        },
         fecharOutrosComboboxes(excetoId) {
             const mapa = {
                 'venc-ferias-cargo': 'comboFiltroCargo',

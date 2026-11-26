@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Feedback\StoreFeedbackHistoricoRequest;
 use App\Models\FeedbackHistorico;
 use DB;
 use Illuminate\Http\Request;
@@ -35,38 +36,23 @@ class FeedbackHistoricoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreFeedbackHistoricoRequest $request)
     {
         $this->authorize('admissao_historico');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'feedback_id' => 'required',
-            'situacao' => 'required',
-            'descricao' => 'required',
-            'compromisso' => 'required',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar a Feedback',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            FeedbackHistorico::create($dados);
 
-                FeedbackHistorico::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE FEEDBACK HISTORICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE FEEDBACK HISTORICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

@@ -4,6 +4,9 @@ namespace Tests\Unit\Services\Admissao\Importacao;
 
 use App\Models\Admissao;
 use App\Services\Admissao\Importacao\ValidadorLinhaPlanilhaAdmissao;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class ValidadorLinhaPlanilhaAdmissaoTest extends TestCase
@@ -14,6 +17,24 @@ class ValidadorLinhaPlanilhaAdmissaoTest extends TestCase
     {
         parent::setUp();
         $this->validador = new ValidadorLinhaPlanilhaAdmissao();
+
+        Schema::dropIfExists('centro_custos');
+        Schema::create('centro_custos', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->string('label')->nullable();
+            $table->boolean('ativo')->default(true);
+            $table->timestamps();
+        });
+
+        DB::table('centro_custos')->insert([
+            'id' => 1,
+            'empresa_id' => 1,
+            'label' => 'CC Teste',
+            'ativo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function testLinhaValidaRetornaSemErros(): void

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreCloudCadastroRequest;
+use App\Http\Requests\Operacional\StoreCloudRequest;
+use App\Http\Requests\Operacional\UpdateCloudCadastroRequest;
 use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
@@ -29,41 +32,30 @@ class CloudController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCloudRequest $request)
     {
         $this->authorize('cloud_insert');
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'label' => 'required|min:1|unique:itens_cloud,label',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao criar nova pasta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
+        $dados['quem_criou'] = auth()->id();
+        $cloud = ItensCloud::create($dados);
 
-            $dados['quem_criou'] = auth()->id();
-            $cloud = ItensCloud::create($dados);
-
-            $dadosPermissao = [];
-            if ($request->filled('permissoes')) {
-                foreach ($dados['permissoes'] as $grupo) {
-                    $dadosPermissao[] = $grupo['id'];
-                }
+        $dadosPermissao = [];
+        if ($request->filled('permissoes')) {
+            foreach ($dados['permissoes'] as $grupo) {
+                $dadosPermissao[] = $grupo['id'];
             }
-            $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
-            // Mantém compatibilidade com permissão financeira legada quando existir
-            if (GrupoCloud::query()->whereKey(GrupoCloud::GRUPOADMINFINANCEIRO)->exists()) {
-                $permissoes[] = GrupoCloud::GRUPOADMINFINANCEIRO;
-                $permissoes = array_values(array_unique($permissoes));
-            }
-
-            $cloud->Permissoes()->sync($permissoes);
-
-            return response()->json([], 201);
         }
+        $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
+        // Mantém compatibilidade com permissão financeira legada quando existir
+        if (GrupoCloud::query()->whereKey(GrupoCloud::GRUPOADMINFINANCEIRO)->exists()) {
+            $permissoes[] = GrupoCloud::GRUPOADMINFINANCEIRO;
+            $permissoes = array_values(array_unique($permissoes));
+        }
+
+        $cloud->Permissoes()->sync($permissoes);
+
+        return response()->json([], 201);
     }
 
     /**
@@ -491,26 +483,10 @@ class CloudController extends Controller
         ]);
     }
 
-    public function storeCloud(Request $request)
+    public function storeCloud(StoreCloudCadastroRequest $request)
     {
 //        $this->authorize('cloud_cadastro_insert');
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                Rule::unique('clouds')->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
-                }),
-            ]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar o Cloud',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -625,26 +601,10 @@ class CloudController extends Controller
         return $grupo ? $grupo->usuarios : collect();
     }
 
-    public function updateCloud(Request $request, Cloud $cloud)
+    public function updateCloud(UpdateCloudCadastroRequest $request, Cloud $cloud)
     {
 //        $this->authorize('cloud_cadastro_update');
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                Rule::unique('clouds')->ignore($cloud->id)->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
-                }),
-            ]
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar o Cloud',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->validated();
 
         try {
             DB::beginTransaction();

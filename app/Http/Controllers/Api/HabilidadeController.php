@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreHabilidadeApiRequest;
+use App\Http\Requests\Api\UpdateHabilidadeApiRequest;
 use App\Models\Habilidade;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class HabilidadeController extends Controller
 {
@@ -46,28 +47,12 @@ class HabilidadeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param StoreHabilidadeApiRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreHabilidadeApiRequest $request)
     {
-        if (!auth()->user()->tokenCan('habilidade_create')) {
-            return response()->json([
-                'msg' => 'Acesso negado',
-                'error' => true
-            ], 403);
-        }
-
-        $validator = Validator::make($request->input(), [
-            'nome' => 'required|unique:habilidades|max:255',
-            'descricao' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
-        }
-
-        return response()->json(Habilidade::create($request->input()), 201);
+        return response()->json(Habilidade::create($request->validated()), 201);
     }
 
     /**
@@ -84,25 +69,13 @@ class HabilidadeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param UpdateHabilidadeApiRequest $request
      * @param \App\Models\Habilidade $habilidade
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, Habilidade $habilidade)
+    public function update(UpdateHabilidadeApiRequest $request, Habilidade $habilidade)
     {
-        if (!auth()->user()->tokenCan('habilidade_update')) {
-            return response()->json(['msg' => 'Acesso negado', 'error' => true], 403);
-        }
-
-        $validator = Validator::make($request->input(), [
-            'nome' => "required|unique:habilidades,nome,{$habilidade->id}|max:255",
-            'descricao' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
-        }
-
-        return response()->json($habilidade->update($request->input()));
+        return response()->json($habilidade->update($request->validated()));
     }
 
     /**

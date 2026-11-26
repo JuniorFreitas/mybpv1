@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\parecerTecnicaExport;
+use App\Http\Requests\Entrevista\StoreParecerEntrevistaTecnicaRequest;
+use App\Http\Requests\Entrevista\UpdateParecerEntrevistaTecnicaRequest;
 use App\Jobs\JobExportaExcel;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerEntrevistaTecnica;
@@ -41,35 +43,20 @@ class ParecerEntrevistaTecnicaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreParecerEntrevistaTecnicaRequest $request)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'opera_plat_movel' => 'required',
-            'tipo_contratacao' => 'required',
-            'opera_plat_ponte' => 'required',
-            'resultado_final' => 'required',
-            'nota' => 'required',
-            'quem_entrevistou' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                ParecerEntrevistaTecnica::create($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
+        try {
+            DB::beginTransaction();
+            ParecerEntrevistaTecnica::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
 //                return $e->getMessage();
-                $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -109,23 +96,9 @@ class ParecerEntrevistaTecnicaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, ParecerEntrevistaTecnica $entrevistaTecnica)
+    public function update(UpdateParecerEntrevistaTecnicaRequest $request, ParecerEntrevistaTecnica $entrevistaTecnica)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'opera_plat_movel' => 'required',
-            'tipo_contratacao' => 'required',
-            'opera_plat_ponte' => 'required',
-            'resultado_final' => 'required',
-            'nota' => 'required',
-            'quem_entrevistou' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar a entrevista',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $entrevistaTecnica->update($dados);

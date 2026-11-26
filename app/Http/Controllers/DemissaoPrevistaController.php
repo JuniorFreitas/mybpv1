@@ -27,34 +27,27 @@ use PDF;
 class DemissaoPrevistaController extends Controller
 {
     /**
+     * Listagem vive no hub de Movimentação (SPA).
+     */
+    public function index()
+    {
+        return redirect()->route('g.movimentacao.index');
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreDemissaoPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['valor'] = $dados['valor_format'];
         $dados['user_id'] = auth()->user()->id;
         $dados = app(DemissaoPrevistaLotacaoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
-                'centro_custo_filial_id' => 'nullable|integer',
-                'colaborador_id' => 'required',
-                'valor_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Demissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $demissaoPrevista = DemissaoPrevista::create($dados);
@@ -121,26 +114,12 @@ class DemissaoPrevistaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, DemissaoPrevista $demissaoPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateDemissaoPrevistaRequest $request, DemissaoPrevista $demissaoPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['valor'] = $dados['valor_format'];
         $dados = app(DemissaoPrevistaLotacaoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
-                'colaborador_id' => 'required',
-                'valor_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Demissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $demissaoPrevista->update($dados);

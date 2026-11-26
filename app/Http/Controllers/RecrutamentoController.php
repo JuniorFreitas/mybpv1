@@ -119,12 +119,12 @@ class RecrutamentoController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, Curriculo $recrutamento)
+    public function update(\App\Http\Requests\Recrutamento\UpdateRecrutamentoRequest $request, Curriculo $recrutamento)
     {
         try {
             DB::beginTransaction();
 
-            $requestData = $this->prepareRequestData($request->input());
+            $requestData = $this->prepareRequestData($request->all());
             $curriculumData = $requestData['curriculos'];
             $candidato = Curriculo::find($curriculumData['id']);
             $empresa = Cliente::find(auth()->user()->empresa_id);
@@ -503,7 +503,7 @@ class RecrutamentoController extends Controller
                 'nome' => $curriculumData['nome'],
                 'email' => $curriculumData['email'],
                 'empresa' => $empresa->razao_social,
-                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
+                'logo' => config('filesystems.aws_url') . "/public/email_" . $empresa->apelido . ".jpg",
                 'vaga_selecionada' => $vagaAberta->titulo . ' -' . $vagaAberta->Municipio->nome . '/' . $vagaAberta->Municipio->uf,
                 'local_entrevista' => $requestData['local_entrevista'],
                 'data_entrevista' => $requestData['data_entrevista'],
@@ -529,7 +529,7 @@ class RecrutamentoController extends Controller
                 'nome' => $curriculumData['nome'],
                 'email' => $curriculumData['email'],
                 'empresa' => $empresa->razao_social,
-                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
+                'logo' => config('filesystems.aws_url') . "/public/email_" . $empresa->apelido . ".jpg",
                 'vaga_selecionada' => $vagaAberta->titulo . ' -' . $vagaAberta->Municipio->nome . '/' . $vagaAberta->Municipio->uf,
                 'local_entrevista' => $requestData['local_entrevista'],
                 'data_entrevista' => $requestData['data_entrevista'],

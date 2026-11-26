@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResultadoIntegrado\StoreResultadoIntegradoRequest;
+use App\Http\Requests\ResultadoIntegrado\UpdateResultadoIntegradoRequest;
 use App\Jobs\JobExportaExcel;
 use App\Models\CentroCusto;
 use App\Models\EmpresaExame;
@@ -48,7 +50,7 @@ class ResultadoIntegradoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreResultadoIntegradoRequest $request)
     {
         $dados = $request->input();
         $dados['documentos_entregue_data'] = $dados['documentos_entregue'] ? $dados['documentos_entregue_data'] : null;
@@ -56,18 +58,6 @@ class ResultadoIntegradoController extends Controller
         $dados['encaminhado_treinamento_data'] = $dados['encaminhado_treinamento'] ? $dados['encaminhado_treinamento_data'] : null;
         $dados = array_merge($dados, $this->lotacaoInformada($dados));
 
-        $dadosValidados = \Validator::make($dados, [
-            'documentos_entregue' => 'required',
-            'encaminhado_exame' => 'required',
-            'encaminhado_treinamento' => 'required',
-            'responsavel_envio' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar o resultado integrado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         if ($resposta = $this->recusarExameSemCentroCusto($dados)) {
             return $resposta;
         } else {
@@ -247,7 +237,7 @@ class ResultadoIntegradoController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function update(Request $request, ResultadoIntegrado $resultadoIntegrado)
+    public function update(UpdateResultadoIntegradoRequest $request, ResultadoIntegrado $resultadoIntegrado)
     {
         $dados = $request->input();
         $dados['documentos_entregue_data'] = $dados['documentos_entregue'] ? $dados['documentos_entregue_data'] : null;
@@ -255,18 +245,6 @@ class ResultadoIntegradoController extends Controller
         $dados['encaminhado_treinamento_data'] = $dados['encaminhado_treinamento'] ? $dados['encaminhado_treinamento_data'] : null;
         $dados = array_merge($dados, $this->lotacaoInformada($dados));
 
-        $dadosValidados = \Validator::make($dados, [
-            'documentos_entregue' => 'required',
-            'encaminhado_exame' => 'required',
-            'encaminhado_treinamento' => 'required',
-            'responsavel_envio' => 'required|min:3'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar o resultado integrado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         if ($resposta = $this->recusarExameSemCentroCusto($dados)) {
             return $resposta;
         } else {

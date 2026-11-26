@@ -145,9 +145,7 @@ class ParecerRotaWhatsappServiceTest extends TestCase
     {
         Queue::fake();
 
-        putenv('AMBIENTE=local');
-        $_ENV['AMBIENTE'] = 'local';
-        $_SERVER['AMBIENTE'] = 'local';
+        config(['app.ambiente' => 'local']);
 
         $this->app->forgetInstance(WhatsappNotificationGateService::class);
 

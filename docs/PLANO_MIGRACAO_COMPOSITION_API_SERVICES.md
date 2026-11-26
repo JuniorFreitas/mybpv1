@@ -47,11 +47,13 @@ resources/js/
 
 ## 4. Fases de execução
 
-- **Fase 1:** Criar services (api, notificacao, config, exportacao) e constants.
-- **Fase 2:** Criar composables que usam os services.
-- **Fase 3:** Piloto em 1–2 telas (ex.: relatório vencimento férias, um cadastro).
-- **Fase 4:** Substituir gradualmente mixins por composables nos componentes alterados.
-- **Fase 5:** Migrar componentes críticos para Composition API em lotes pequenos.
+- **Fase 1:** Criar services (api, notificacao, config, exportacao) e constants. ✅ (2026-11-23 — `resources/js/services/*`, `resources/js/constants/`)
+- **Fase 2:** Criar composables que usam os services. ✅ (2026-11-23 — `usePreload`, `useConfig`, `useExportacao`, `useExportarExcel`, `useValidacoes`, `useConstants`)
+- **Fase 3:** Piloto em 1–2 telas (ex.: relatório vencimento férias, um cadastro). ✅ `vencimentoferias` + `aniversariantes` + `ferias` (setup + useExportacao)
+- **Fase 4:** Substituir gradualmente mixins por composables nos componentes alterados. ✅ parcial — `Exportacoes.js` thin wrapper → `exportacaoService`; `useValidacoes` com CPF/CNPJ via `funcoes.js`
+- **Fase 5:** Migrar componentes críticos para Composition API em lotes pequenos. ✅ lotes 2026-11-23 — `WhatsappPreferenciasForm.vue` + `WhatsappNotificacoesUsuarios.vue` (`script setup`); `WhatsappConfig.vue` já Composition; próximos lotes sob demanda
+
+Build: **Vite 6** (`npm run hot` / `npm run build`). Laravel Mix removido.
 
 ---
 

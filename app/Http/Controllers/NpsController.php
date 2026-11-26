@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StoreNpsCicloRequest;
+use App\Http\Requests\Avaliacao\StoreNpsRequest;
 use App\Jobs\JobExportaNpsExcel;
 use App\Models\Acessos;
 use App\Models\NpsCiclo;
@@ -286,26 +288,9 @@ class NpsController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreNpsRequest $request): JsonResponse
     {
         $empresaId = auth()->user()->empresa_id;
-        $idsAtivos = NpsPergunta::ativasParaEmpresa($empresaId)->pluck('id')->all();
-
-        if (empty($idsAtivos)) {
-            return response()->json(['erro' => true, 'mensagem' => 'Nenhuma pergunta ativa para responder.'], 422);
-        }
-
-        $rules = [
-            'respostas' => 'required|array|min:1',
-            'respostas.*.nps_pergunta_id' => 'required|integer|in:' . implode(',', $idsAtivos),
-            'respostas.*.nota' => 'required|integer|min:1|max:5',
-        ];
-
-        $validator = \Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['erro' => true, 'mensagem' => 'Dados inválidos.', 'erros' => $validator->errors()], 422);
-        }
 
         try {
             DB::beginTransaction();
@@ -363,20 +348,9 @@ class NpsController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function storeCiclo(Request $request): JsonResponse
+    public function storeCiclo(StoreNpsCicloRequest $request): JsonResponse
     {
         $this->autorizarGerenciamento();
-
-        $rules = [
-            'nome' => 'required|string|max:255',
-            'data_inicio' => 'required|date',
-            'data_fim' => 'required|date|after_or_equal:data_inicio',
-            'ativo' => 'boolean',
-        ];
-        $validator = \Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['erro' => true, 'mensagem' => 'Dados inválidos.', 'erros' => $validator->errors()], 422);
-        }
 
         $ativo = $request->boolean('ativo', true);
         $dataInicio = Carbon::parse($request->input('data_inicio'))->startOfDay();

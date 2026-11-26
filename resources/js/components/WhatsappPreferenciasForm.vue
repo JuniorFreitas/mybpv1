@@ -30,53 +30,42 @@
     </fieldset>
 </template>
 
-<script>
-export default {
-    name: 'WhatsappPreferenciasForm',
+<script setup>
+import { computed } from 'vue'
 
-    props: {
-        preferencias: { type: Array, default: () => [] },
-        whatsappLiberado: { type: Boolean, default: false },
-        disabled: { type: Boolean, default: false },
-        inputPrefix: { type: String, default: 'whatsapp-pref' },
-        descricao: {
-            type: String,
-            default: 'Escolha quais notificações WhatsApp este usuário deve receber.',
-        },
-        ocultarQuandoVazio: { type: Boolean, default: false },
+const props = defineProps({
+    preferencias: { type: Array, default: () => [] },
+    whatsappLiberado: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    inputPrefix: { type: String, default: 'whatsapp-pref' },
+    descricao: {
+        type: String,
+        default: 'Escolha quais notificações WhatsApp este usuário deve receber.',
     },
+    ocultarQuandoVazio: { type: Boolean, default: false },
+})
 
-    emits: ['update:preferencias'],
+const emit = defineEmits(['update:preferencias'])
 
-    computed: {
-        visivel() {
-            if (!this.ocultarQuandoVazio) {
-                return true
-            }
+const visivel = computed(() => {
+    if (!props.ocultarQuandoVazio) {
+        return true
+    }
+    return props.preferencias.length > 0
+})
 
-            return this.preferencias.length > 0
-        },
-    },
+const slug = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
-    methods: {
-        slug(texto) {
-            return String(texto).toLowerCase().replace(/[^a-z0-9]+/g, '-')
-        },
-
-        onToggle(item, event) {
-            const atualizadas = this.preferencias.map((pref) => {
-                if (pref.modulo !== item.modulo) {
-                    return { ...pref }
-                }
-
-                return {
-                    ...pref,
-                    receber: event.target.checked,
-                }
-            })
-
-            this.$emit('update:preferencias', atualizadas)
-        },
-    },
+const onToggle = (item, event) => {
+    const atualizadas = props.preferencias.map((pref) => {
+        if (pref.modulo !== item.modulo) {
+            return { ...pref }
+        }
+        return {
+            ...pref,
+            receber: event.target.checked,
+        }
+    })
+    emit('update:preferencias', atualizadas)
 }
 </script>

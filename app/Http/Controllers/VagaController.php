@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreVagaRequest;
+use App\Http\Requests\Cadastros\UpdateVagaRequest;
 use App\Models\Vaga;
 use App\Models\Vencimento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class VagaController extends Controller
 {
@@ -37,31 +38,10 @@ class VagaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreVagaRequest $request)
     {
-        $this->authorize('cadastro_vagas_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
+        $dados = $request->all();
         unset($dados['vencimento_ids']);
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                Rule::unique('vagas')->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
-                }),
-            ],
-            'ativo' => 'required|boolean',
-            'cbo_id' => 'nullable|integer|exists:cbos,id',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -129,31 +109,10 @@ class VagaController extends Controller
      * @param \App\Models\Vaga $vaga
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, Vaga $vaga)
+    public function update(UpdateVagaRequest $request, Vaga $vaga)
     {
-        $this->authorize('cadastro_vagas_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
+        $dados = $request->all();
         unset($dados['vencimento_ids']);
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [
-                'required',
-                Rule::unique('vagas')->ignore($vaga->id)->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
-                }),
-            ],
-            'ativo' => 'required|boolean',
-            'cbo_id' => 'nullable|integer|exists:cbos,id',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
