@@ -24,7 +24,7 @@ class ImportacaoConcluidaMail extends Mailable implements ShouldQueue
         public ?string $relatorioConteudoCsv = null
     ) {
         $this->to($this->emailUsuario, $this->nomeUsuario);
-        $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
+        $this->from(config('mail.from.address'), config('app.name'));
         $this->comErro = $totalErros > 0;
         $this->dataProcessamento = now()->format('d/m/Y H:i');
         $assunto = $totalErros > 0

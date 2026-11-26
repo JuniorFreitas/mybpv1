@@ -9,7 +9,7 @@
                 Olá, <strong>{{ $para->nome }}</strong>,<br><br>
                 @if($acao=='add')
                     <strong>{{$de->nome}}</strong> adicionou você na tarefa <strong>{{$tarefa->titulo}}</strong> da lista <strong>{{$tarefa->Lista->titulo}}</strong> <br><br>
-                    Acesse agora: <a href="{{env('APP_URL')}}">{{env('APP_URL')}}</a><br><br>
+                    Acesse agora: <a href="{{config('app.url')}}">{{config('app.url')}}</a><br><br>
                 @endif
 
                 @if($acao=='remove')

@@ -14,7 +14,7 @@
     @vite(['resources/sass/app.scss'])
     <link rel="stylesheet" href="{{ asset('css/icons.min.css') }}">
     @include('layouts.favicon')
-    @if(env('APP_ENV') !== 'local')
+    @if(!app()->environment('local'))
         <script type="text/javascript">
             (function (c, l, a, r, i, t, y) {
                 c[a] = c[a] || function () {

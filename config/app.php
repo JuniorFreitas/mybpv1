@@ -62,6 +62,16 @@ return [
     /** Usado para forceScheme HTTPS (legado MIX_/VITE_AMBIENTE). */
     'vite_ambiente' => env('VITE_AMBIENTE', env('MIX_AMBIENTE', env('APP_ENV', 'local'))),
 
+    /**
+     * Proxies confiáveis (TrustProxies). CIDRs separados por vírgula, ou "*".
+     * Default: redes privadas (LB/VPC).
+     */
+    'trusted_proxies' => env('TRUSTED_PROXIES', '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1'),
+
+    /** Ops: dump remoto (routes/MybpCommand.php). Desabilitado por padrão. */
+    'dump_enabled' => filter_var(env('MYBP_DUMP_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+    'dump_ssh_command' => env('MYBP_DUMP_SSH_COMMAND', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

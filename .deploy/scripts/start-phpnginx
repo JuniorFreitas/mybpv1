@@ -88,9 +88,12 @@ if [ -d "${APP_PATH}/vendor" ]; then
         log " -----> Warning: WhatsappTemplatePadraoSeeder falhou."
 
     if [ "${ENABLE_CACHE_APP:-false}" = "true" ]; then
-        log " -----> Info: Caching configuration..."
+        log " -----> Info: Caching configuration (obrigatório com FPM clear_env=yes)..."
         php artisan package:discover --ansi || true
-        php artisan config:cache || true
+        if ! php artisan config:cache; then
+            log " -----> Error: config:cache falhou; abortando start (sem cache o FPM não vê secrets)."
+            exit 1
+        fi
     fi
 else
     log " -----> Warning: Directory ${APP_PATH}/vendor does not yet exist."

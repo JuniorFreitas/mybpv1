@@ -67,7 +67,7 @@ class LoginController extends Controller
             'password' => 'required',
         ];
 
-        if (!in_array(env('APP_ENV'), ['local', 'testing'], true)) {
+        if (!app()->environment(['local', 'testing'])) {
             $regras['g-recaptcha-response'] = ['required', new Recaptcha()];
         }
 
