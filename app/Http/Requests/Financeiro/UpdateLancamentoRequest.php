@@ -22,7 +22,9 @@ class UpdateLancamentoRequest extends FormRequest
             'data_hora' => ['required', 'min:19', 'date_format:d/m/Y à\s H:i'],
             'plano_id' => ['required', 'integer', $this->existsNaEmpresa('plano_contas')],
             'operacao' => ['required', 'in:C,D,T'],
-            'formas.*.id' => ['required', 'integer', $this->existsNaEmpresa('formas_pagamento')],
+            // id = linha de LancamentoForma (0 = nova); forma_pagamento_id = FK tenant
+            'formas.*.id' => ['required', 'integer', 'min:0'],
+            'formas.*.forma_pagamento_id' => ['required', 'integer', $this->existsNaEmpresa('formas_pagamento')],
         ];
     }
 
