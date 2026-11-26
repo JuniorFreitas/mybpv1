@@ -20,7 +20,8 @@ class UpdateAjusteJornadaRequest extends FormRequest
     {
         return [
             'periodos' => 'required',
-            'ocorrencia_id' => $this->regraIdNaEmpresa('ocorrencias_jornada'),
+            // Padrões globais (empresa_id null) + da empresa; bloqueia outras empresas
+            'ocorrencia_id' => $this->regraIdNaEmpresaOuGlobal('ocorrencias_jornada'),
             'periodos.*.entrada' => 'required|min:5',
             'periodos.*.saida' => 'required|min:5',
         ];

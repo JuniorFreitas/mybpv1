@@ -48,6 +48,49 @@ trait ValidatesTenantOwned
     }
 
     /**
+     * Exists da empresa autenticada OU registros globais (empresa_id null).
+     * Bloqueia IDs de outras empresas.
+     */
+    protected function existsNaEmpresaOuGlobal(string $table, string $column = 'id', ?bool $ignorarSoftDeleted = null): Exists
+    {
+        $empresaId = $this->empresaIdAutenticada();
+        $rule = Rule::exists($table, $column)->where(function ($query) use ($empresaId) {
+            $query->where('empresa_id', $empresaId)->orWhereNull('empresa_id');
+        });
+
+        if ($this->deveIgnorarSoftDeleted($table, $ignorarSoftDeleted)) {
+            $rule->whereNull('deleted_at');
+        }
+
+        return $rule;
+    }
+
+    /**
+     * @return list<string|Exists>
+     */
+    protected function regraIdNaEmpresaOuGlobal(
+        string $table,
+        bool $required = true,
+        bool $nullable = false,
+        ?bool $ignorarSoftDeleted = null
+    ): array {
+        $rules = [];
+
+        if ($required) {
+            $rules[] = 'required';
+        }
+
+        if ($nullable) {
+            $rules[] = 'nullable';
+        }
+
+        $rules[] = 'integer';
+        $rules[] = $this->existsNaEmpresaOuGlobal($table, 'id', $ignorarSoftDeleted);
+
+        return $rules;
+    }
+
+    /**
      * @return list<string|Exists>
      */
     protected function regraIdNaEmpresa(

@@ -11,7 +11,7 @@ test.describe('Regressão — Recrutamento (P0)', () => {
     test('REC-UI-02 Filtros/listagem interativos presentes', async ({ page }) => {
         await page.goto('/g/curriculos/recrutamentos');
         await expectAutenticado(page);
-        const filtro = page.locator('input, select, .filtro, [class*="filtro"], [class*="Filtro"]').first();
+        const filtro = page.locator('#rec-filtro-busca');
         await expect(filtro).toBeVisible({ timeout: 20_000 });
     });
 });

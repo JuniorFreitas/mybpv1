@@ -58,4 +58,18 @@ class AdminFinanceiroFormRequestsTest extends TestCase
         $this->assertArrayHasKey('plano_id', $erros);
         $this->assertArrayHasKey('operacao', $erros);
     }
+
+    public function test_lancamento_valida_forma_pagamento_id_e_permite_id_zero(): void
+    {
+        $request = new StoreLancamentoRequest();
+        $rules = $request->rules();
+
+        $this->assertArrayHasKey('formas.*.id', $rules);
+        $this->assertArrayHasKey('formas.*.forma_pagamento_id', $rules);
+        $this->assertContains('min:0', $rules['formas.*.id']);
+        $this->assertStringNotContainsString(
+            'formas_pagamento',
+            implode('|', array_map(static fn ($r) => is_object($r) ? (string) $r : $r, $rules['formas.*.id']))
+        );
+    }
 }
