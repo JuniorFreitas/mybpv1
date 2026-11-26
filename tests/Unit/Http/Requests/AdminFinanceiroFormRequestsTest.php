@@ -67,9 +67,9 @@ class AdminFinanceiroFormRequestsTest extends TestCase
         $this->assertArrayHasKey('formas.*.id', $rules);
         $this->assertArrayHasKey('formas.*.forma_pagamento_id', $rules);
         $this->assertContains('min:0', $rules['formas.*.id']);
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             'formas_pagamento',
-            array_map(static fn ($r) => is_object($r) ? (string) $r : $r, $rules['formas.*.id'])
+            implode('|', array_map(static fn ($r) => is_object($r) ? (string) $r : $r, $rules['formas.*.id']))
         );
     }
 }
