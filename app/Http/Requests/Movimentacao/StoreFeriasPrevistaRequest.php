@@ -37,8 +37,10 @@ class StoreFeriasPrevistaRequest extends FormRequest
         return [
             'qnt_dias' => ['required'],
             'dias_saldo' => ['required'],
+            // colaborador_id no fluxo de férias é feedback_curriculos.id (não users.id).
+            // Ver Colaborador.vue (tipo=ferias) e AutoCompletesController::colaboradoresFerias.
             'periodo_aquisitivo_id' => $this->regraIdAtivo('periodos_aquisitivos'),
-            'colaborador_id' => $this->regraIdNaEmpresa('users'),
+            'colaborador_id' => $this->regraIdNaEmpresa('feedback_curriculos'),
             'gestor_id' => $this->regraIdNaEmpresa('users'),
             'data_admissao' => ['required'],
             'ultima_data' => ['required'],
