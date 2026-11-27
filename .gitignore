@@ -46,3 +46,8 @@ docs/security/audits/
 .phpunit.cache
 # Mascara temporaria usada na captura de telas do manual (docs/manual-completo/ferramentas)
 /public/_manual_mascara.js
+
+# Cloudflare Tunnel (dev)
+.dev/
+/storage/app/tunnel.host
+/storage/app/tunnel.url

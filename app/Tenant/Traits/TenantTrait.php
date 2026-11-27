@@ -7,11 +7,15 @@ use App\Tenant\Scopes\ScopeEmpresa;
 
 trait TenantTrait
 {
-    public static function boot()
+    /**
+     * Laravel 12.74+/13: Model::observe() instancia `new static` e não pode
+     * rodar durante o boot. Registramos os eventos do EmpresaObserver direto.
+     */
+    protected static function bootTenantTrait(): void
     {
-        parent::boot();
-
         static::addGlobalScope(new ScopeEmpresa());
-        static::observe(new EmpresaObserver());
+
+        static::registerModelEvent('creating', EmpresaObserver::class.'@creating');
+        static::registerModelEvent('updating', EmpresaObserver::class.'@updating');
     }
 }
