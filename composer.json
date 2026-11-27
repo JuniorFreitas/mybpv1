@@ -2,7 +2,7 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "MyBPIN - Sistema de Gestão de RH",
-    "version": "2.2.0",
+    "version": "3.0.0",
     "keywords": [
         "framework",
         "laravel",
@@ -19,10 +19,10 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "intervention/image": "^2.5",
         "juniorfreitas/phpquery-laravel": "dev-master",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
         "laravel/horizon": "^5.47.2",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
+        "laravel/tinker": "^3.0",
         "laravel/ui": "^4.0",
         "league/csv": "^9.25",
         "league/flysystem-aws-s3-v3": "^3.0",
@@ -35,13 +35,13 @@
         "spatie/laravel-activitylog": "^4.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.10",
+        "barryvdh/laravel-debugbar": "^4.0",
         "barryvdh/laravel-ide-helper": "^3.0",
         "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0",
-        "spatie/laravel-ignition": "^3.0"
+        "phpunit/phpunit": "^12.0",
+        "spatie/laravel-ignition": "^2.13"
     },
     "config": {
         "optimize-autoloader": true,

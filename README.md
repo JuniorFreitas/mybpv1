@@ -31,7 +31,7 @@ Integrações reais: e-mail e filas (Laravel), Redis/Horizon, Reverb/Pusher (tem
 
 | Camada   | Tecnologia |
 |----------|------------|
-| Backend  | PHP 8.2, Laravel 12, Sanctum, Horizon, Reverb/Pusher |
+| Backend  | PHP 8.3+, Laravel 13, Sanctum, Horizon, Reverb/Pusher |
 | Frontend | Vue 3, Laravel Mix, Bootstrap 4, Axios, Laravel Echo |
 | Banco    | MySQL (uso típico; suporta outros drivers) |
 | Fila/cache | Redis (Horizon, cache, sessão) |

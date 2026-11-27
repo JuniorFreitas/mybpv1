@@ -126,9 +126,10 @@ return [
     |
     */
 
+    // Nome explícito (estilo L12) para não invalidar cookies após o default hifenizado do L13.
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
+        Str::slug((string) env('APP_NAME', 'laravel'), '_').'_session'
     ),
 
     /*
@@ -197,5 +198,18 @@ return [
     */
 
     'same_site' => 'lax',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serialization
+    |--------------------------------------------------------------------------
+    |
+    | Laravel 13 skeleton usa "json". Mantemos "php" no upgrade para não
+    | derrubar sessões ativas que armazenam objetos PHP.
+    |
+    | Supported: "json", "php"
+    |
+    */
+    'serialization' => env('SESSION_SERIALIZATION', 'php'),
 
 ];

@@ -7,6 +7,22 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-26
+
+### Modificado
+
+- Upgrade do framework **Laravel 12 → 13** (`laravel/framework` `v13.44.1`). Referencias: `composer.json`, `composer.lock`, PR #69.
+- Dependências alinhadas ao L13: `laravel/tinker` `^3`, `phpunit/phpunit` `^12`, `barryvdh/laravel-debugbar` `^4`, `spatie/laravel-ignition` `^2.13`. Referencias: `composer.json`.
+- CSRF passa a usar `PreventRequestForgery` (alias app `VerifyCsrfToken` mantido). Referencias: `app/Http/Middleware/VerifyCsrfToken.php`.
+- `TenantTrait` deixa de chamar `Model::observe()` no boot (proibido no L13) e registra eventos via `registerModelEvent`. Referencias: `app/Tenant/Traits/TenantTrait.php`.
+- Prefixo de cache e cookie de sessão mantidos no estilo L12 (sem hifenizar defaults). Sessão continua com serialização `php` para não derrubar sessões ativas. Referencias: `config/cache.php`, `config/session.php`.
+- Docs de stack atualizadas para Laravel 13 / PHP 8.3+. Referencias: `AGENTS.md`, `README.md`.
+
+### Corrigido
+
+- Teste Weekly Report de compartilhamento passa a criar a habilidade `weekly_report` antes do convite. Referencias: `tests/Feature/WeeklyReportMultitenantTest.php`.
+- Data provider do gate WhatsApp compatível com PHPUnit 12 (arity do método). Referencias: `tests/Unit/Domain/Whatsapp/WhatsappNotificationGateServiceTest.php`.
+
 ## [2.2.0] - 2026-11-26
 
 ### Adicionado
