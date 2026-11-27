@@ -99,7 +99,20 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache'),
+    // Prefixo explícito (estilo L12) para não mudar chaves após o default hifenizado do L13.
+    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel'), '_').'_cache'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Laravel 13: false endurece unserialization. Mantemos null (legado) porque
+    | o app ainda cacheia Collections/Models Eloquent em alguns fluxos.
+    | Endurecer depois com allow-list ou payloads só em array.
+    |
+    */
+    'serializable_classes' => null,
 
     /*
     |--------------------------------------------------------------------------

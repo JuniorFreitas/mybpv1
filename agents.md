@@ -5,7 +5,7 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 ## 1) Visao geral do projeto
 
 - **Dominio**: Sistema de Gestao de RH (recrutamento, admissoes, treinamentos, avaliacoes, assinatura digital).
-- **Stack**: Laravel 12 (PHP 8.2), Vue 3 + Laravel Mix, Docker, Horizon, Reverb/Pusher.
+- **Stack**: Laravel 13 (PHP 8.3+), Vue 3 + Laravel Mix, Docker, Horizon, Reverb/Pusher.
 - **Objetivo dos agentes**: acelerar entregas mantendo padroes de seguranca, performance e confiabilidade.
 
 ## 2) Principios obrigatorios

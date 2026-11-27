@@ -5,8 +5,10 @@ namespace Tests\Unit\Services\CentroCusto;
 use App\Models\User;
 use App\Services\CentroCusto\CentroCustoGestorResolverService;
 use DomainException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Tests\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 class CentroCustoGestorResolverServiceTest extends TestCase
 {
     public function test_usuario_ativo_retorna_false_para_inativo(): void

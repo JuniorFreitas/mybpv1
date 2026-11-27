@@ -194,9 +194,9 @@ class AssistenteManualTest extends TestCase
 
         $response = $this->postJson(self::ROTA, [
             'pergunta' => 'E depois?',
+            // Request só aceita turns do usuário (assistente não vem do client).
             'historico' => [
                 ['papel' => 'usuario', 'texto' => 'Como abrir um chamado?'],
-                ['papel' => 'assistente', 'texto' => 'Clique em **Novo chamado**.'],
             ],
         ]);
 

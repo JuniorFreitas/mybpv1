@@ -29,6 +29,9 @@ class WeeklyReportMultitenantTest extends TestCase
         $this->withoutMiddleware([
             \App\Http\Middleware\CarregaHabilidades::class,
             \App\Http\Middleware\CheckPasswordReset::class,
+            // L13 PreventRequestForgery (alias VerifyCsrfToken): POST JSON sem Sec-Fetch-Site → 400
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
         ]);
 
         Gate::define('weekly_report', fn () => true);
@@ -219,7 +222,7 @@ class WeeklyReportMultitenantTest extends TestCase
         ]);
     }
 
-    private function user(int $empresaId = 10, string $nome = null): User
+    private function user(int $empresaId = 10, ?string $nome = null): User
     {
         static $seq = 0;
         $seq++;
@@ -519,6 +522,11 @@ class WeeklyReportMultitenantTest extends TestCase
 
     public function test_dono_compartilha_e_remove_membro(): void
     {
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
         $dono = $this->user(10, 'Dono Share');
         $convidado = $this->user(10, 'Convidado Share');
         $this->actingAs($dono);

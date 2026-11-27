@@ -8,8 +8,10 @@ use App\Models\User;
 use App\Services\CentroCusto\CentroCustoGestorResolverService;
 use App\Services\TransferenciaPrevista\TransferenciaPrevistaFluxoAprovacaoService;
 use DomainException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Tests\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
 {
     private TransferenciaPrevistaFluxoAprovacaoService $service;
