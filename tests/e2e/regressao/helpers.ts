@@ -101,6 +101,7 @@ export const ROTAS_REGRESSAO: RotaSmoke[] = [
     // Customizações / config
     { id: 'CFG-01', path: '/g/administracao/aprovacao-extra-config', modulo: 'Aprovação Extra', prioridade: 'P0', permitirNegado: true },
     { id: 'CFG-02', path: '/g/configuracoes/whatsapp', modulo: 'WhatsApp config', prioridade: 'P1', permitirNegado: true },
+    { id: 'CFG-03', path: '/g/configuracoes/notificacoes', modulo: 'Notificações', prioridade: 'P0', permitirNegado: true },
 
     // Cadastros
     { id: 'CAD-01', path: '/g/cadastro/centrocusto', modulo: 'Centro de custo', prioridade: 'P0' },

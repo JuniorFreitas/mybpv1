@@ -30,6 +30,7 @@ const rotas = [
     '/g/cadastro/centrocusto',
     '/g/cadastro/vagas',
     '/g/administracao/aprovacao-extra-config',
+    '/g/configuracoes/notificacoes',
 ];
 
 async function waitEnter(msg) {

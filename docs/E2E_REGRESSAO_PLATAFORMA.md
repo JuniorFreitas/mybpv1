@@ -66,7 +66,7 @@ Cada ID em `ROTAS_REGRESSAO` (`helpers.ts`):
 | P1 | Idem; `permitirNegado` anota 403 sem falhar |
 | P2 | Opcional (`PLAYWRIGHT_INCLUIR_P2=1`) |
 
-IDs P0 (resumo): `AUTH-01`, `ADM-01…05`, `PLA-01/02/04…07`, `REC-01`, `CFG-01`, `CAD-01/02`.
+IDs P0 (resumo): `AUTH-01`, `ADM-01…05`, `PLA-01/02/04…07`, `REC-01`, `CFG-01/03`, `CAD-01/02`.
 
 ### 3.2 Admissão
 
@@ -93,10 +93,29 @@ IDs P0 (resumo): `AUTH-01`, `ADM-01…05`, `PLA-01/02/04…07`, `REC-01`, `CFG-0
 | REC-UI-01/02 | Lista + filtros |
 | CAD-UI-01…03 | Centro custo, vagas, docs pré |
 | CFG-UI-01 | Config aprovação extra |
+| CFG-03 | Configurações › Notificações (`/g/configuracoes/notificacoes`) |
 
 ---
 
-## 4. Extensão (próximos ciclos)
+## 4. Pirâmide de regressão (pós Laravel 13)
+
+Ordem recomendada antes de merge/deploy:
+
+| Camada | Comando | O que cobre |
+|--------|---------|-------------|
+| L0 Runtime | `docker compose restart mybpdp` + `curl -I http://localhost:8000/g/login` | 502/SIGSEGV FPM, nginx |
+| L1 PHPUnit | `docker compose exec mybpdp php vendor/bin/phpunit` | 858 testes em memória (API, FormRequests, services, CSRF) |
+| L2 Auth E2E | `npm run test:e2e:regressao:login` (com `PLAYWRIGHT_LOGIN`/`PASSWORD`) | Sessão `playwright/.auth/user.json` |
+| L3 Smoke rotas | `npm run test:e2e:regressao` | P0/P1 sem 5xx (inclui Notificações CFG-03) |
+| L4 UI crítica | specs `admissao`, `planejamento`, `cadastros`, `aprovacao-extra` | Headings/filtros/listagens |
+| L5 Plataforma | `npm run test:e2e:plataforma` | Regressão + WhatsApp |
+| L6 Manual | Login → Movimentação (Aprovar/Reprovar) → Notificações → Mailpit | Fluxos L13 + BCC |
+
+**Atenção:** após `composer update`, sempre `php artisan optimize:clear` + restart do container antes do E2E.
+
+---
+
+## 5. Extensão (próximos ciclos)
 
 1. Adicionar rota em `ROTAS_REGRESSAO` + ID no catálogo.
 2. Specs de fluxo (criar/editar) só com fixtures isoladas — nunca em massa na base compartilhada.
@@ -105,13 +124,13 @@ IDs P0 (resumo): `AUTH-01`, `ADM-01…05`, `PLA-01/02/04…07`, `REC-01`, `CFG-0
 
 ---
 
-## 5. Evidências
+## 6. Evidências
 
 - Relatório HTML: `output/playwright/report`
 - Falhas: screenshot/vídeo em `output/playwright/test-results`
 - Smoke Cursor Browser: `output/playwright/cursor-browser-smoke-2026-11-23.json`
 - Task harness: `.harness/backlog/QA-004.md`
 
-## 6. Nota sobre Movimentação
+## 7. Nota sobre Movimentação
 
 As URLs `.../ferias-prevista`, `demissao-prevista`, `transferencia-prevista`, `valor-extra-prevista`, `admissoes-prevista`, `intermitente-fixo-prevista`, `mudanca-cargo` redirecionam para o hub `/g/planejamento/movimentacao` (listagem SPA). O smoke aceita esse redirect.
