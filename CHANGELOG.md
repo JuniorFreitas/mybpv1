@@ -19,6 +19,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Modificado
 
+- `laravel/framework` atualizado de `v12.73.0` para `v12.74.0`. Referencias: `composer.lock`, PR #69.
 - Modais de aprovação de Admissão, Demissão, Férias, Valor Extra, Mudança de Cargo, Intermitente→Fixo e Transferência alinhados ao padrão Aprovar/Reprovar (sem combobox de status). Referencias: `resources/js/components/planejamento/movimentacao/Solicitacao*.vue`, PR #69.
 - Jobs de notificação de movimentação passam a enviar 1º destinatário em To e demais em BCC. Referencias: `app/Jobs/Concerns/EnviaMailComBcc.php`, `app/Jobs/Movimentacao/*/JobNotificacaoRecursiva.php`.
 - E-mail de aprovação de mudança de cargo exibe apenas alterações relevantes. Referencias: `resources/views/.../mudanca_cargo/notificacao-aprovacao.blade.php`.
