@@ -232,262 +232,133 @@
                         </div>
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="aprovando && !form.data_aprovacao">Esta solicitação ainda não foi aprovada ou reprovada!</div>
-
                     <fieldset
-                        v-if="exigeAprovacaoGestorOrigem && (visualizar || aprovando) && form.modo_aprovacao !== 'gestor_unico' && (aprovando || form.status_aprovacao || form.gestor_id)"
-                        class="mybp-modal-secao"
+                        v-if="modoDecisaoAprovacao || visualizar"
+                        class="mybp-modal-secao mybp-card-secao--fluxo"
                     >
-                        <legend>Aprovação Gestor Origem</legend>
-                            <div class="row">
-                                <div v-if="!aprovando && form.user_aprovacao" class="col-12">
-                                    <legend>
-                                        {{ form.status_aprovacao }} por: {{ labelAprovadorOrigem(form) }} em
-                                        {{ form.data_aprovacao }}
-                                    </legend>
-                                </div>
+                        <legend>Fluxo de aprovação</legend>
+                        <mybp-fluxo-aprovacao :steps="fluxoStepsModal" />
+                    </fieldset>
 
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :readonly="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovando && !aprovandoGestorDestino && !aprovandoGestorUnico && !aprovandoExtra && !aprovandoRh"
+                        titulo="Aprovação Gestor Origem"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao"
+                        :nome="labelAprovadorOrigem(form)"
+                        :data="form.data_aprovacao || ''"
+                        :input-id="`transferencia-obs-origem-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'origem' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao"
+                    />
 
-                                <div class="col-md-6">
-                                    <div class="form-group mybp-filtro-campo">
-                                        <label class="mybp-label" :for="`transferencia-status-origem-${hash}`">
-                                            Status <span class="text-danger" v-if="aprovando">*</span>
-                                        </label>
-                                        <div class="mybp-combobox-wrap">
-                                            <combobox-auto-complete
-                                                instance-id="form-transferencia-status-origem"
-                                                :input-id="`transferencia-status-origem-${hash}`"
-                                                v-model="form.status_aprovacao"
-                                                :options="formStatusAprovacaoOpcoes"
-                                                :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                                placeholder-blur="Selecione..."
-                                                empty-message="Nenhuma opção encontrada."
-                                                :max-results="10"
-                                                @opening="fecharOutrosComboboxes('form-transferencia-status-origem')"
-                                                @select="limparComboboxInvalido('transferencia-status-origem-' + hash)"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoGestorDestino && !aprovandoExtra && !aprovandoRh"
+                        titulo="Aprovação Gestor Destino"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_gestor_destino"
+                        :nome="labelAprovadorDestino(form)"
+                        :data="form.data_aprovacao_gestor_destino || ''"
+                        :input-id="`transferencia-obs-destino-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'destino' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao_gestor_destino"
+                    />
 
-                        <fieldset
-                            v-if="(visualizar || aprovandoGestorDestino) && form.exige_aprovacao_gestor_destino"
-                            class="mybp-modal-secao"
-                        >
-                            <legend>Aprovação Gestor Destino</legend>
-                            <div class="row">
-                                <div v-if="!aprovandoGestorDestino && form.quem_aprovou_gestor_destino" class="col-12">
-                                    <legend>
-                                        {{ form.status_aprovacao_gestor_destino }} por: {{ labelAprovadorDestino(form) }} em
-                                        {{ form.data_aprovacao_gestor_destino }}
-                                    </legend>
-                                </div>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoGestorUnico && !aprovandoExtra && !aprovandoRh"
+                        titulo="Aprovação Gestor Aprovação"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_gestor_unico"
+                        :nome="labelAprovadorGestorUnico(form)"
+                        :data="form.data_aprovacao_gestor_unico || ''"
+                        :input-id="`transferencia-obs-gestor-unico-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'gestor_unico' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao_gestor_unico"
+                    />
 
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :readonly="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao_gestor_destino"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoExtra && !aprovandoRh"
+                        :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_extra"
+                        :nome="form.user_aprovacao_extra?.nome || ''"
+                        :data="form.data_aprovacao_extra || ''"
+                        :input-id="`transferencia-obs-extra-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'extra' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao_extra"
+                    />
 
-                                <div class="col-md-6">
-                                    <div class="form-group mybp-filtro-campo">
-                                        <label class="mybp-label" :for="`transferencia-status-destino-${hash}`">
-                                            Status <span class="text-danger" v-if="aprovandoGestorDestino">*</span>
-                                        </label>
-                                        <div class="mybp-combobox-wrap">
-                                            <combobox-auto-complete
-                                                instance-id="form-transferencia-status-destino"
-                                                :input-id="`transferencia-status-destino-${hash}`"
-                                                v-model="form.status_aprovacao_gestor_destino"
-                                                :options="formStatusAprovacaoOpcoes"
-                                                :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                                placeholder-blur="Selecione..."
-                                                empty-message="Nenhuma opção encontrada."
-                                                :max-results="10"
-                                                @opening="fecharOutrosComboboxes('form-transferencia-status-destino')"
-                                                @select="limparComboboxInvalido('transferencia-status-destino-' + hash)"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoRh"
+                        titulo="Aprovação RH"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.resposta_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        :input-id="`transferencia-obs-rh-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'rh' ? erroObsAprovacao : ''"
+                        v-model="form.obs_rh"
+                    />
 
-                        <div class="alert alert-warning" v-if="aprovandoGestorUnico && !form.data_aprovacao_gestor_unico">
-                            Esta solicitação ainda não foi aprovada ou reprovada!
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao && exibeEtapaGestorOrigem(form)"
+                        titulo="Aprovação Gestor Origem"
+                        :editavel="false"
+                        :status="form.status_aprovacao"
+                        :nome="labelAprovadorOrigem(form)"
+                        :data="form.data_aprovacao || ''"
+                        v-model="form.obs_aprovacao"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao && form.exige_aprovacao_gestor_destino && form.modo_aprovacao !== 'gestor_unico'"
+                        titulo="Aprovação Gestor Destino"
+                        :editavel="false"
+                        :status="form.status_aprovacao_gestor_destino"
+                        :nome="labelAprovadorDestino(form)"
+                        :data="form.data_aprovacao_gestor_destino || ''"
+                        v-model="form.obs_aprovacao_gestor_destino"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao && form.modo_aprovacao === 'gestor_unico'"
+                        titulo="Aprovação Gestor Aprovação"
+                        :editavel="false"
+                        :status="form.status_aprovacao_gestor_unico"
+                        :nome="labelAprovadorGestorUnico(form)"
+                        :data="form.data_aprovacao_gestor_unico || ''"
+                        v-model="form.obs_aprovacao_gestor_unico"
+                    />
+
+                    <template v-if="visualizar && !modoDecisaoAprovacao">
+                        <div v-if="!temAprovacaoExtra" class="alert alert-info mb-3">
+                            <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
+                        <mybp-aprovacao-decisao
+                            v-if="temAprovacaoExtra"
+                            :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                            :editavel="false"
+                            :status="form.status_aprovacao_extra"
+                            :nome="form.user_aprovacao_extra?.nome || ''"
+                            :data="form.data_aprovacao_extra || ''"
+                            v-model="form.obs_aprovacao_extra"
+                        />
+                    </template>
 
-                        <fieldset
-                            v-if="(visualizar || aprovandoGestorUnico) && form.modo_aprovacao === 'gestor_unico'"
-                            class="mybp-modal-secao"
-                        >
-                            <legend>Aprovação Gestor Aprovação</legend>
-                            <div class="row">
-                                <div v-if="!aprovandoGestorUnico && form.quem_aprovou_gestor_unico" class="col-12">
-                                    <legend>
-                                        {{ form.status_aprovacao_gestor_unico }} por: {{ labelAprovadorGestorUnico(form) }} em
-                                        {{ form.data_aprovacao_gestor_unico }}
-                                    </legend>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :readonly="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao_gestor_unico"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group mybp-filtro-campo">
-                                        <label class="mybp-label" :for="`transferencia-status-gestor-unico-${hash}`">
-                                            Status <span class="text-danger" v-if="aprovandoGestorUnico">*</span>
-                                        </label>
-                                        <div class="mybp-combobox-wrap">
-                                            <combobox-auto-complete
-                                                instance-id="form-transferencia-status-gestor-unico"
-                                                :input-id="`transferencia-status-gestor-unico-${hash}`"
-                                                v-model="form.status_aprovacao_gestor_unico"
-                                                :options="formStatusAprovacaoOpcoes"
-                                                :disabled="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
-                                                placeholder-blur="Selecione..."
-                                                empty-message="Nenhuma opção encontrada."
-                                                :max-results="10"
-                                                @opening="fecharOutrosComboboxes('form-transferencia-status-gestor-unico')"
-                                                @select="limparComboboxInvalido('transferencia-status-gestor-unico-' + hash)"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <div class="alert alert-warning" v-if="aprovandoExtra">
-                            Esta solicitação ainda não foi aprovada ou reprovada por {{ nomeAprovacaoExtra }}!
-                        </div>
-
-                        <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
-                            <div v-if="!temAprovacaoExtra" class="alert alert-info">
-                                <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
-                            </div>
-
-                            <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
-                            <div class="row" v-if="temAprovacaoExtra">
-                                <div v-if="!aprovandoExtra && form.user_aprovacao_extra" class="col-12">
-                                    <legend>
-                                        {{ form.status_aprovacao_extra }} por: {{ form.user_aprovacao_extra.nome }} em
-                                        {{ form.data_aprovacao_extra }}
-                                    </legend>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :readonly="!aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao_extra"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group mybp-filtro-campo">
-                                        <label class="mybp-label" :for="`transferencia-status-extra-${hash}`">
-                                            Status <span class="text-danger" v-if="aprovandoExtra">*</span>
-                                        </label>
-                                        <div class="mybp-combobox-wrap">
-                                            <combobox-auto-complete
-                                                instance-id="form-transferencia-status-extra"
-                                                :input-id="`transferencia-status-extra-${hash}`"
-                                                v-model="form.status_aprovacao_extra"
-                                                :options="formStatusAprovacaoOpcoes"
-                                                :disabled="!aprovandoExtra || aprovandoRh"
-                                                placeholder-blur="Selecione..."
-                                                empty-message="Nenhuma opção encontrada."
-                                                :max-results="10"
-                                                @opening="fecharOutrosComboboxes('form-transferencia-status-extra')"
-                                                @select="limparComboboxInvalido('transferencia-status-extra-' + hash)"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
-
-                        <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
-                            <legend>Aprovação RH</legend>
-                            <div class="row">
-                                <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
-                                    <legend>{{ form.resposta_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}</legend>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :readonly="visualizar && !aprovando && !aprovandoRh"
-                                            v-model="form.obs_rh"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group mybp-filtro-campo">
-                                        <label class="mybp-label" :for="`transferencia-status-rh-${hash}`">
-                                            Status <span class="text-danger" v-if="aprovandoRh">*</span>
-                                        </label>
-                                        <div class="mybp-combobox-wrap">
-                                            <combobox-auto-complete
-                                                instance-id="form-transferencia-status-rh"
-                                                :input-id="`transferencia-status-rh-${hash}`"
-                                                v-model="form.resposta_rh"
-                                                :options="formStatusAprovacaoOpcoes"
-                                                :disabled="!aprovandoRh"
-                                                placeholder-blur="Selecione..."
-                                                empty-message="Nenhuma opção encontrada."
-                                                :max-results="10"
-                                                @opening="fecharOutrosComboboxes('form-transferencia-status-rh')"
-                                                @select="limparComboboxInvalido('transferencia-status-rh-' + hash)"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao"
+                        titulo="Aprovação RH"
+                        :editavel="false"
+                        :status="form.resposta_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        v-model="form.obs_rh"
+                    />
                 </form>
             </template>
             <template #rodape>
@@ -499,46 +370,14 @@
                         <i class="fa fa-save"></i> Salvar
                     </button>
                 </div>
-                <button
-                    type="button"
-                    class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovando && !atualizado && !preload && !form.data_aprovacao"
-                    @click.prevent="aprovar"
-                >
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovandoGestorDestino && !atualizado && !preload && !form.data_aprovacao_gestor_destino"
-                    @click.prevent="aprovarGestorDestino"
-                >
-                    <i class="fa fa-save"></i> Salvar Gestor Destino
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovandoGestorUnico && !atualizado && !preload && !form.data_aprovacao_gestor_unico"
-                    @click.prevent="aprovarGestorUnico"
-                >
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovandoExtra && !atualizado && !preload && !form.data_aprovacao_extra"
-                    @click.prevent="aprovarExtra"
-                >
-                    <i class="fa fa-save"></i> Salvar {{ nomeAprovacaoExtra }}
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovandoRh && !atualizado && !preload && !form.user_rh_id"
-                    @click.prevent="aprovarRH"
-                >
-                    <i class="fa fa-save"></i> Salvar RH
-                </button>
+                <div v-show="modoDecisaoAprovacao && !preload" class="mybp-aprovacao-acoes">
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click.prevent="decidirAprovacao('reprovado')">
+                        <i class="fas fa-times"></i> Reprovar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click.prevent="decidirAprovacao('aprovado')">
+                        <i class="fas fa-check"></i> Aprovar
+                    </button>
+                </div>
             </template>
         </modal>
 
@@ -960,6 +799,7 @@ import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import MybpAprovacaoDecisao from '../../ui/MybpAprovacaoDecisao.vue'
 import Validacoes from '../../../mixins/Validacoes'
 import configuracoes from '../../../mixins/Configuracoes'
 import MovimentacaoListagem from '../../../mixins/MovimentacaoListagem'
@@ -1034,6 +874,7 @@ export default defineComponent({
         MybpCardCampo,
         MybpFluxoAprovacao,
         MybpStatusBadge,
+        MybpAprovacaoDecisao,
         datepicker
     },
     mixins: [Validacoes, configuracoes, MovimentacaoListagem],
@@ -1047,11 +888,6 @@ export default defineComponent({
         const componenteRef = ref(null)
         const datepickerDataTransferencia = ref(null)
         const hash = `mybp_${Math.floor(Math.random() * 999999)}`
-        const formStatusAprovacaoOpcoes = [
-            { value: '', label: 'Selecione...' },
-            { value: 'aprovado', label: 'Aprovar' },
-            { value: 'reprovado', label: 'Reprovar' }
-        ]
         const tituloJanela = ref('Solicitação de transferência')
         const preload = ref(false)
         const editando = ref(false)
@@ -1064,6 +900,8 @@ export default defineComponent({
         const aprovandoGestorUnico = ref(false)
         const aprovandoExtra = ref(false)
         const aprovandoRh = ref(false)
+        const erroObsAprovacao = ref('')
+        const erroObsAprovacaoEtapa = ref('')
         const aprovar_por_gestor = ref(false)
         const aprovar_por_rh = ref(false)
         const usuarioLogadoId = ref(null)
@@ -1104,6 +942,14 @@ export default defineComponent({
         const emFluxoAprovacao = computed(
             () =>
                 visualizar.value ||
+                aprovando.value ||
+                aprovandoGestorDestino.value ||
+                aprovandoGestorUnico.value ||
+                aprovandoExtra.value ||
+                aprovandoRh.value
+        )
+        const modoDecisaoAprovacao = computed(
+            () =>
                 aprovando.value ||
                 aprovandoGestorDestino.value ||
                 aprovandoGestorUnico.value ||
@@ -2008,6 +1854,71 @@ export default defineComponent({
             return steps
         }
 
+        const fluxoStepsModal = computed(() => fluxoStepsLista(form))
+
+        function limparErroObsAprovacao() {
+            erroObsAprovacao.value = ''
+            erroObsAprovacaoEtapa.value = ''
+        }
+
+        function decidirAprovacao(status) {
+            const decisao = String(status || '').toLowerCase()
+            if (decisao !== 'aprovado' && decisao !== 'reprovado') {
+                return
+            }
+
+            let etapa = 'origem'
+            let campoStatus = 'status_aprovacao'
+            let campoObs = 'obs_aprovacao'
+            let acao = aprovar
+
+            if (aprovandoRh.value) {
+                etapa = 'rh'
+                campoStatus = 'resposta_rh'
+                campoObs = 'obs_rh'
+                acao = aprovarRH
+            } else if (aprovandoExtra.value) {
+                etapa = 'extra'
+                campoStatus = 'status_aprovacao_extra'
+                campoObs = 'obs_aprovacao_extra'
+                acao = aprovarExtra
+            } else if (aprovandoGestorDestino.value) {
+                etapa = 'destino'
+                campoStatus = 'status_aprovacao_gestor_destino'
+                campoObs = 'obs_aprovacao_gestor_destino'
+                acao = aprovarGestorDestino
+            } else if (aprovandoGestorUnico.value) {
+                etapa = 'gestor_unico'
+                campoStatus = 'status_aprovacao_gestor_unico'
+                campoObs = 'obs_aprovacao_gestor_unico'
+                acao = aprovarGestorUnico
+            } else if (!aprovando.value) {
+                return
+            }
+
+            const obs = String(form[campoObs] || '').trim()
+            if (decisao === 'reprovado' && !obs) {
+                erroObsAprovacaoEtapa.value = etapa
+                erroObsAprovacao.value = 'Informe a observação para reprovar'
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Informe a observação para reprovar')
+                }
+                return
+            }
+
+            limparErroObsAprovacao()
+
+            if (decisao === 'reprovado') {
+                const nome = form.autocomplete_label_colaborador || 'este colaborador'
+                if (!window.confirm(`Confirma reprovar a transferência de ${nome}?`)) {
+                    return
+                }
+            }
+
+            form[campoStatus] = decisao
+            acao()
+        }
+
         async function cadastrar() {
             if (!validarColaboradorEGestor() || !validarFormularioVisivel()) return
             preload.value = true
@@ -2035,12 +1946,14 @@ export default defineComponent({
             aprovandoExtra.value = opt.aprovandoExtra ?? false
             aprovandoRh.value = opt.aprovandoRh ?? false
             podeanexar.value = opt.podeanexar ?? false
+            limparErroObsAprovacao()
         }
 
         async function formOpen(id) {
             Object.assign(form, formDefault)
             form.id = id
             tituloJanela.value = `#${id}`
+            limparErroObsAprovacao()
             if (typeof formReset === 'function') formReset()
             preload.value = true
             try {
@@ -2131,11 +2044,8 @@ export default defineComponent({
         }
 
         async function aprovar() {
-            if (
-                !exigirCombobox(form.status_aprovacao, `transferencia-status-origem-${hash}`, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(form.status_aprovacao || ''))) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Escolha Aprovar ou Reprovar')
                 return
             }
             preload.value = true
@@ -2152,11 +2062,8 @@ export default defineComponent({
         }
 
         async function aprovarExtra() {
-            if (
-                !exigirCombobox(form.status_aprovacao_extra, `transferencia-status-extra-${hash}`, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(form.status_aprovacao_extra || ''))) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Escolha Aprovar ou Reprovar')
                 return
             }
             preload.value = true
@@ -2173,11 +2080,8 @@ export default defineComponent({
         }
 
         async function aprovarGestorDestino() {
-            if (
-                !exigirCombobox(form.status_aprovacao_gestor_destino, `transferencia-status-destino-${hash}`, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(form.status_aprovacao_gestor_destino || ''))) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Escolha Aprovar ou Reprovar')
                 return
             }
             preload.value = true
@@ -2194,11 +2098,8 @@ export default defineComponent({
         }
 
         async function aprovarGestorUnico() {
-            if (
-                !exigirCombobox(form.status_aprovacao_gestor_unico, `transferencia-status-gestor-unico-${hash}`, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(form.status_aprovacao_gestor_unico || ''))) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Escolha Aprovar ou Reprovar')
                 return
             }
             preload.value = true
@@ -2215,11 +2116,8 @@ export default defineComponent({
         }
 
         async function aprovarRH() {
-            if (
-                !exigirCombobox(form.resposta_rh, `transferencia-status-rh-${hash}`, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(form.resposta_rh || ''))) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Escolha Aprovar ou Reprovar')
                 return
             }
             preload.value = true
@@ -2510,7 +2408,6 @@ export default defineComponent({
             datepickerDataTransferencia,
             onInputDataTransferencia,
             hash,
-            formStatusAprovacaoOpcoes,
             limparComboboxInvalido,
             limparCampoDataInvalido,
             tituloJanela,
@@ -2525,6 +2422,12 @@ export default defineComponent({
             aprovandoGestorUnico,
             aprovandoExtra,
             aprovandoRh,
+            erroObsAprovacao,
+            erroObsAprovacaoEtapa,
+            modoDecisaoAprovacao,
+            fluxoStepsModal,
+            decidirAprovacao,
+            limparErroObsAprovacao,
             aprovar_por_gestor,
             aprovar_por_rh,
             temAprovacaoExtra,

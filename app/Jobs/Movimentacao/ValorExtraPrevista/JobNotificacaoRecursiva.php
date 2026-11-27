@@ -15,11 +15,11 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
+use App\Jobs\Concerns\EnviaMailComBcc;
 
 class JobNotificacaoRecursiva implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EnviaWhatsappNotificacaoMovimentacao;
+    use EnviaMailComBcc, Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EnviaWhatsappNotificacaoMovimentacao;
 
     public $tries = 3;
     public $timeout = 300;
@@ -170,7 +170,11 @@ class JobNotificacaoRecursiva implements ShouldQueue
 
     private function buscarEmailsRH(): array
     {
-        return RHHelper::buscarEmailsRH($this->valorExtra->empresa_id);
+        $ccId = (int) ($this->valorExtra->centro_custo_id ?: 0);
+
+        return RHHelper::buscarEmailsRH((int) $this->valorExtra->empresa_id, array_filter([
+            'centro_custo_id' => $ccId > 0 ? $ccId : null,
+        ], fn ($v) => $v !== null));
     }
 
     private function buscarEmailUsuario(int $userId): ?string
@@ -327,21 +331,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
             'has_aprovacao_extra' => (bool) $this->cacheConfig,
         ];
 
-        $bcc = array_slice($destinatarios, 1);
-        $mailHost = config('mail.mailers.smtp.host') ?? config('mail.host');
-        $isMailtrap = $mailHost === 'smtp.mailtrap.io';
-
-        Log::info("Preparando email - Tipo: {$tipo}, Destinatários: " . implode(', ', $destinatarios));
-        Log::info("Enviando email para: {$destinatarios[0]} - Tipo: {$tipo}");
-        if (!empty($bcc) && $isMailtrap) {
-            Log::info("BCC (não enviado no Mailtrap): " . implode(', ', $bcc));
-        }
-
-        $email = Mail::to($destinatarios[0]);
-        if (!empty($bcc) && !$isMailtrap) {
-            $email->bcc($bcc);
-        }
-        $email->send(new NotificacaoAprovacaoMail($dados));
+        $this->enviarMailComBcc($destinatarios, new NotificacaoAprovacaoMail($dados), $tipo);
         $this->enviarWhatsappAposEmail($dados, $destinatarios, 'Valor extra');
     }
 

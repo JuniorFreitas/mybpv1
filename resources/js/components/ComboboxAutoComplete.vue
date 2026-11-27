@@ -55,6 +55,7 @@
                     role="option"
                     class="ma-autocomplete-item"
                     :class="{ 'ma-autocomplete-item--ativo': isOptionActive(opt) }"
+                    :title="optionTitle(opt)"
                     @mousedown.prevent="selecionar(opt)"
                 >
                     <slot name="option" :option="opt" :active="isOptionActive(opt)">
@@ -180,6 +181,16 @@ export default {
             }
             const s = String(meta)
             return s.startsWith('—') ? s : `— ${s}`
+        },
+        optionTitle(opt) {
+            if (!opt) return ''
+            const label = opt.label != null ? String(opt.label).trim() : ''
+            if (!opt.meta) return label
+            const meta = String(opt.meta).replace(/^—\s*/, '').trim()
+            if (!meta) return label
+            if (!label) return meta
+            if (label.includes(meta)) return label
+            return `${label} — ${meta}`
         },
         optionKey(opt, idx) {
             const v = opt.value
@@ -376,6 +387,9 @@ export default {
     font-size: 0.75rem;
     line-height: 1.25;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .ma-autocomplete-item:last-child {
     border-bottom: none;

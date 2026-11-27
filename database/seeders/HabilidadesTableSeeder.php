@@ -366,6 +366,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_customizacoes_gestor_aprovacao', 'descricao' => 'Configurar Gestor Aprovação (menu Customizações)'];
         $lista[] = ['nome' => 'configuracao_whatsapp', 'descricao' => 'Configurar templates e dados de contato WhatsApp (menu Customizações)'];
         $lista[] = ['nome' => 'preferencias_notificacao_whatsapp', 'descricao' => 'Escolher quais notificações WhatsApp deseja receber da empresa'];
+        $lista[] = ['nome' => 'configuracao_notificacoes', 'descricao' => 'Configurar grupos de destinatários de notificações (menu Configurações)'];
 
         //Relatorios
         $lista[] = ['nome' => 'relatorio_relatorios', 'descricao' => 'Acessar Relatórios'];

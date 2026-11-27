@@ -123,5 +123,6 @@
   "resources/js/g/administracao/aprovacao-extra-config/app.js",
   "resources/js/g/administracao/gestor-aprovacao-config/app.js",
   "resources/js/g/configuracoes/whatsapp/app.js",
+  "resources/js/g/configuracoes/notificacoes/app.js",
   "resources/js/g/site/manutencao-programada/app.js"
 ]

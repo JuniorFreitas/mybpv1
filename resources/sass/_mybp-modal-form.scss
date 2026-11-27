@@ -128,3 +128,243 @@
     letter-spacing: 0.02em;
     color: #495057;
 }
+
+/* Painel de itens selecionados (destinatários / CC) */
+.mybp-modal-selecionados {
+    border: 1px solid #e6ebef;
+    border-radius: 8px;
+    background: #fafbfc;
+    overflow: hidden;
+}
+
+.mybp-modal-selecionados__topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid #e6ebef;
+    background: #f3f5f7;
+}
+
+.mybp-modal-selecionados__titulo {
+    font-size: 0.72rem;
+    color: #495057;
+}
+
+.mybp-modal-selecionados__titulo strong {
+    margin-left: 0.2rem;
+    color: #212529;
+}
+
+.mybp-modal-selecionados__acoes {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+}
+
+.mybp-modal-selecionados__acoes .btn-link {
+    font-size: 0.72rem;
+    line-height: 1.2;
+}
+
+/* Chips de seleção múltipla (CC, destinatários, lotação) */
+.mybp-modal-chip-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    max-height: 9.5rem;
+    overflow-y: auto;
+    padding-right: 0.15rem;
+}
+
+.mybp-modal-selecionados .mybp-modal-chip-lista {
+    margin-top: 0;
+    padding: 0.55rem 0.65rem;
+    max-height: 12rem;
+}
+
+.mybp-modal-chip-lista--pessoas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+    gap: 0.4rem;
+}
+
+.mybp-modal-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.28rem 0.45rem 0.28rem 0.55rem;
+    background: #fff;
+    border: 1px solid #d7dde3;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.mybp-modal-chip--pessoa {
+    align-items: flex-start;
+    width: 100%;
+    max-width: none;
+    padding: 0.4rem 0.4rem 0.4rem 0.55rem;
+    border-radius: 10px;
+}
+
+.mybp-modal-chip__corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.mybp-modal-chip__texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 14rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.mybp-modal-chip--pessoa .mybp-modal-chip__texto {
+    max-width: 100%;
+}
+
+.mybp-modal-chip__meta {
+    color: #6c757d;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mybp-modal-chip--pessoa .mybp-modal-chip__meta {
+    max-width: 100%;
+}
+
+.mybp-modal-chip__remove {
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    padding: 0.1rem 0.25rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.mybp-modal-chip__remove:hover {
+    color: #c82333;
+    background: #f8e9eb;
+}
+
+.mybp-modal-chip-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+    margin-top: 0.35rem;
+}
+
+.mybp-modal-chip-acoes .btn-link {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.mybp-modal-empty-hint {
+    color: #6c757d;
+    font-size: 0.78rem;
+    padding: 0.45rem 0.15rem 0.1rem;
+}
+
+.mybp-modal-empty-hint--painel {
+    margin-top: 0.15rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px dashed #d7dde3;
+    border-radius: 8px;
+    background: #fafbfc;
+}
+
+.mybp-modal-secao-count {
+    font-weight: 500;
+    color: #6c757d;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Status do formulário: barra compacta + pills Ativo/Inativo */
+.mybp-modal-form .mybp-modal-campo-fix .form-control[readonly] {
+    background: #f4f6f8;
+    color: #495057;
+    cursor: default;
+}
+
+.mybp-modal-form .mybp-modal-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.75rem;
+    margin-top: 0.15rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #e6ebef;
+    border-radius: 8px;
+    background: #fafbfc;
+}
+
+.mybp-modal-form .mybp-modal-status-bar__label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.mybp-modal-form .mybp-modal-status-pills {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem;
+    border-radius: 999px;
+    background: #eef1f4;
+    gap: 0.12rem;
+}
+
+.mybp-modal-form .mybp-modal-status-pill {
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mybp-modal-form .mybp-modal-status-pill:hover {
+    color: #343a40;
+}
+
+.mybp-modal-form .mybp-modal-status-pill.is-ativo {
+    background: #28a745;
+    color: #fff;
+}
+
+.mybp-modal-form .mybp-modal-status-pill.is-inativo {
+    background: #6c757d;
+    color: #fff;
+}
+
+.mybp-modal-form .mybp-modal-status-bar__hint {
+    font-size: 0.72rem;
+    color: #6c757d;
+    flex: 1 1 10rem;
+    min-width: 0;
+}

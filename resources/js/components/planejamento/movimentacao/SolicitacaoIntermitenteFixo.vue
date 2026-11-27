@@ -196,166 +196,101 @@
                         </div>
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
-                        Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
-                    </div>
-
-                    <fieldset v-if="visualizar || aprovando || aprovandoRh" class="mybp-modal-secao">
-                        <legend>Aprovação Gestor</legend>
-                        <div class="row">
-                            <div v-if="!aprovando && form.user_aprovacao" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}
-                                </p>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`intermitente-status-gestor-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovando">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusGestor"
-                                            instance-id="form-intermitente-status-gestor"
-                                            :input-id="`intermitente-status-gestor-${hash}`"
-                                            v-model="form.status_aprovacao"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-intermitente-status-gestor')"
-                                            @select="limparComboboxInvalido('intermitente-status-gestor-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovando || aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_aprovacao"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
+                    <fieldset
+                        v-if="modoDecisaoAprovacao || visualizar"
+                        class="mybp-modal-secao mybp-card-secao--fluxo"
+                    >
+                        <legend>Fluxo de aprovação</legend>
+                        <mybp-fluxo-aprovacao :steps="fluxoStepsModal" />
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="aprovandoExtra">
-                        Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
-                    </div>
+                    <mybp-aprovacao-decisao
+                        v-if="aprovando && !aprovandoExtra && !aprovandoRh"
+                        titulo="Aprovação Gestor"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao"
+                        :nome="form.user_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao || ''"
+                        :input-id="`intermitente-obs-gestor-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'gestor' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao"
+                    />
 
-                    <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
-                        <div v-if="!temAprovacaoExtra" class="alert alert-info">
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoExtra && !aprovandoRh"
+                        :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_extra"
+                        :nome="form.aprovacao_extra_nome || ''"
+                        :data="form.data_aprovacao_extra || ''"
+                        :input-id="`intermitente-obs-extra-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'extra' ? erroObsAprovacao : ''"
+                        v-model="form.obs_aprovacao_extra"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="aprovandoRh"
+                        titulo="Aprovação RH"
+                        :editavel="true"
+                        :disabled="preload"
+                        :status="form.status_aprovacao_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        :input-id="`intermitente-obs-rh-${hash}`"
+                        :erro="erroObsAprovacaoEtapa === 'rh' ? erroObsAprovacao : ''"
+                        v-model="form.obs_rh"
+                    />
+
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao"
+                        titulo="Aprovação Gestor"
+                        :editavel="false"
+                        :status="form.status_aprovacao"
+                        :nome="form.user_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao || ''"
+                        v-model="form.obs_aprovacao"
+                    />
+
+                    <template v-if="visualizar && !modoDecisaoAprovacao">
+                        <div v-if="!temAprovacaoExtra" class="alert alert-info mb-3">
                             <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
-                        <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
-                        <div class="row" v-if="temAprovacaoExtra">
-                            <div v-if="!aprovandoExtra && form.aprovacao_extra_nome" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra_nome }} em
-                                    {{ form.data_aprovacao_extra }}
-                                </p>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`intermitente-status-extra-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovandoExtra">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusExtra"
-                                            instance-id="form-intermitente-status-extra"
-                                            :input-id="`intermitente-status-extra-${hash}`"
-                                            v-model="form.status_aprovacao_extra"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovandoExtra || aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-intermitente-status-extra')"
-                                            @select="limparComboboxInvalido('intermitente-status-extra-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_aprovacao_extra"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
+                        <mybp-aprovacao-decisao
+                            v-if="temAprovacaoExtra"
+                            :titulo="nomeAprovacaoExtra || 'Aprovação Extra'"
+                            :editavel="false"
+                            :status="form.status_aprovacao_extra"
+                            :nome="form.aprovacao_extra_nome || ''"
+                            :data="form.data_aprovacao_extra || ''"
+                            v-model="form.obs_aprovacao_extra"
+                        />
+                    </template>
 
-                    <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
-
-                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
-                        <legend>Aprovação RH</legend>
-                        <div class="row">
-                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
-                                <p class="mb-0 text-muted">
-                                    {{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}
-                                </p>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" :for="`intermitente-status-rh-${hash}`">
-                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
-                                    </label>
-                                    <div class="mybp-combobox-wrap">
-                                        <combobox-auto-complete
-                                            ref="comboFormStatusRh"
-                                            instance-id="form-intermitente-status-rh"
-                                            :input-id="`intermitente-status-rh-${hash}`"
-                                            v-model="form.status_aprovacao_rh"
-                                            :options="formStatusAprovacaoOpcoes"
-                                            :disabled="!aprovandoRh"
-                                            placeholder-blur="Selecione..."
-                                            empty-message="Nenhuma opção encontrada."
-                                            :max-results="10"
-                                            @opening="fecharOutrosComboboxes('form-intermitente-status-rh')"
-                                            @select="limparComboboxInvalido('intermitente-status-rh-' + hash)"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :readonly="!aprovandoRh"
-                                        v-model="form.obs_rh"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
+                    <mybp-aprovacao-decisao
+                        v-if="visualizar && !modoDecisaoAprovacao"
+                        titulo="Aprovação RH"
+                        :editavel="false"
+                        :status="form.status_aprovacao_rh"
+                        :nome="form.rh_aprovacao?.nome || ''"
+                        :data="form.data_aprovacao_rh || ''"
+                        v-model="form.obs_rh"
+                    />
                 </form>
             </template>
             <template #rodape>
                 <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="cadastrando && !preload" @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovando && !preload && !form.data_aprovacao" @click.prevent="aprovar">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoRh && !preload && !form.data_aprovacao_rh" @click.prevent="aprovarRh">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
+                <div v-show="modoDecisaoAprovacao && !preload" class="mybp-aprovacao-acoes">
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click.prevent="decidirAprovacao('reprovado')">
+                        <i class="fas fa-times"></i> Reprovar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click.prevent="decidirAprovacao('aprovado')">
+                        <i class="fas fa-check"></i> Aprovar
+                    </button>
+                </div>
             </template>
         </modal>
 
@@ -764,6 +699,7 @@ import Utils from '../../../mixins/Utils'
 import DateRangeFilter from '../../DateRangeFilter.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import MybpAprovacaoDecisao from '../../ui/MybpAprovacaoDecisao.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
@@ -789,6 +725,7 @@ export default {
         DateRangeFilter,
         ComboboxAutoComplete,
         FiltroListagem,
+        MybpAprovacaoDecisao,
         MybpCardCampo,
         MybpFluxoAprovacao,
         MybpStatusBadge
@@ -813,6 +750,8 @@ export default {
             podeAprovarExtra: false,
             nomeAprovacaoExtra: '',
             preloadExportacao: false,
+            erroObsAprovacao: '',
+            erroObsAprovacaoEtapa: '',
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/intermitente-fixo-prevista/export`,
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
@@ -944,12 +883,23 @@ export default {
         modalCamposBloqueados() {
             return this.visualizar || this.aprovando || this.aprovandoExtra || this.aprovandoRh
         },
-        formStatusAprovacaoOpcoes() {
-            return [
-                { value: '', label: 'Selecione...' },
-                { value: 'aprovado', label: 'Aprovar' },
-                { value: 'reprovado', label: 'Reprovar' }
-            ]
+        modoDecisaoAprovacao() {
+            return this.aprovando || this.aprovandoExtra || this.aprovandoRh
+        },
+        fluxoStepsModal() {
+            return this.fluxoStepsLista({
+                solicitante: this.form.solicitante,
+                created_at: this.form.created_at || this.form.data_solicitacao,
+                status_aprovacao: this.form.status_aprovacao,
+                user_aprovacao: this.form.user_aprovacao,
+                data_aprovacao: this.form.data_aprovacao,
+                status_aprovacao_extra: this.form.status_aprovacao_extra,
+                aprovacao_extra_nome: this.form.aprovacao_extra_nome,
+                data_aprovacao_extra: this.form.data_aprovacao_extra,
+                status_aprovacao_rh: this.form.status_aprovacao_rh,
+                rh_aprovacao: this.form.rh_aprovacao,
+                data_aprovacao_rh: this.form.data_aprovacao_rh
+            })
         },
         naoAprovados() {
             return this.lista.filter((item) => {
@@ -1547,6 +1497,61 @@ export default {
                 })
         },
 
+        limparErroObsAprovacao() {
+            this.erroObsAprovacao = ''
+            this.erroObsAprovacaoEtapa = ''
+        },
+
+        decidirAprovacao(status) {
+            const decisao = String(status || '').toLowerCase()
+            if (decisao !== 'aprovado' && decisao !== 'reprovado') {
+                return
+            }
+
+            let etapa = 'gestor'
+            let campoStatus = 'status_aprovacao'
+            let campoObs = 'obs_aprovacao'
+            if (this.aprovandoExtra) {
+                etapa = 'extra'
+                campoStatus = 'status_aprovacao_extra'
+                campoObs = 'obs_aprovacao_extra'
+            } else if (this.aprovandoRh) {
+                etapa = 'rh'
+                campoStatus = 'status_aprovacao_rh'
+                campoObs = 'obs_rh'
+            } else if (!this.aprovando) {
+                return
+            }
+
+            const obs = String(this.form[campoObs] || '').trim()
+            if (decisao === 'reprovado' && !obs) {
+                this.erroObsAprovacaoEtapa = etapa
+                this.erroObsAprovacao = 'Informe a observação para reprovar'
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Informe a observação para reprovar')
+                }
+                return
+            }
+
+            this.limparErroObsAprovacao()
+
+            if (decisao === 'reprovado') {
+                const nome = this.form.autocomplete_label_colaborador || 'este colaborador'
+                if (!window.confirm(`Confirma reprovar a solicitação de ${nome}?`)) {
+                    return
+                }
+            }
+
+            this.form[campoStatus] = decisao
+            if (etapa === 'gestor') {
+                this.aprovar()
+            } else if (etapa === 'extra') {
+                this.aprovarExtra()
+            } else {
+                this.aprovarRh()
+            }
+        },
+
         formOpen(id) {
             Object.assign(this.form, this.formDefault)
             this.form.id = id
@@ -1558,6 +1563,7 @@ export default {
             this.aprovandoRh = false
             this.editando = false
             this.visualizar = false
+            this.limparErroObsAprovacao()
 
             this.tituloJanela = `#${id}`
 
@@ -1690,12 +1696,10 @@ export default {
         },
 
         aprovar() {
-            const statusId = `intermitente-status-gestor-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
 
@@ -1714,12 +1718,10 @@ export default {
                 })
         },
         aprovarExtra() {
-            const statusId = `intermitente-status-extra-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao_extra || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
 
@@ -1737,12 +1739,10 @@ export default {
                 })
         },
         aprovarRh() {
-            const statusId = `intermitente-status-rh-${this.hash}`
-            if (
-                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
-                    toastMsg: 'Selecione o status da aprovação'
-                })
-            ) {
+            if (!['aprovado', 'reprovado'].includes(String(this.form.status_aprovacao_rh || ''))) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Escolha Aprovar ou Reprovar')
+                }
                 return
             }
             this.preload = true
@@ -1848,10 +1848,7 @@ export default {
                 'intermitente-cnpj': 'comboFiltroCnpj',
                 'intermitente-cc': 'comboFiltroCc',
                 'intermitente-ordenacao': 'comboFiltroOrdenacao',
-                'intermitente-pages': 'comboFiltroPages',
-                'form-intermitente-status-gestor': 'comboFormStatusGestor',
-                'form-intermitente-status-extra': 'comboFormStatusExtra',
-                'form-intermitente-status-rh': 'comboFormStatusRh'
+                'intermitente-pages': 'comboFiltroPages'
             }
             Object.keys(mapa).forEach((id) => {
                 if (id === excetoId) return

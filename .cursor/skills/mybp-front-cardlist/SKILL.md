@@ -303,10 +303,30 @@ mybp-cards-lista
 
 **Header**
 
+Padrão simples (só nome):
+
 - `#id` em `mybp-badge-id`
 - Título principal em `mybp-card-titulo`
-- `bt-ativo` com `@atualizou="atualizar()"`
+- `bt-ativo` (direita) com `@atualizou="atualizar()"` + rota `…/{id}/ativa-desativa`
 - Dropdown com prefixo de chave único (`area:`, `vaga:`, `cc:`)
+
+Padrão com metas (nome + tipo/escopo/etc. — ref. Notificações):
+
+```
+mybp-card-header-row
+  ├── mybp-card-left.mybp-card-cabecalho
+  │     ├── mybp-badge-id
+  │     └── mybp-card-cabecalho__corpo
+  │           ├── mybp-card-cabecalho__topo  → nome
+  │           └── mybp-card-cabecalho__metas → pills mybp-card-meta (label + valor)
+  └── mybp-card-right (@click.stop)
+        ├── bt-ativo
+        └── dropdown ações
+```
+
+- Não misturar nome, tipo e status na mesma frase.
+- Status **não** é badge estático: usar `bt-ativo` **ao lado do dropdown** (direita).
+- CSS em `_mybp-listagem-ui.scss` (`.mybp-card-cabecalho*`, `.mybp-card-meta*`).
 
 **Conteúdo do card** — escolher layout:
 
