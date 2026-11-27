@@ -28,11 +28,13 @@ class UpdateVagaRequest extends FormRequest
     public function rules(): array
     {
         $vaga = $this->route('vaga');
+        // L13 / binding: parâmetro de rota pode vir como model ou id escalar.
+        $vagaId = is_object($vaga) ? ($vaga->id ?? null) : $vaga;
 
         return [
             'nome' => [
                 'required',
-                Rule::unique('vagas')->ignore($vaga?->id)->where(function ($query) {
+                Rule::unique('vagas')->ignore($vagaId)->where(function ($query) {
                     return $this->aplicarSoftDeleteSeExistir(
                         $query->whereNome($this->input('nome'))->whereEmpresaId(auth()->user()->empresa_id),
                         'vagas'

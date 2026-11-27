@@ -22,6 +22,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 - Teste Weekly Report de compartilhamento passa a criar a habilidade `weekly_report` antes do convite. Referencias: `tests/Feature/WeeklyReportMultitenantTest.php`.
 - Data provider do gate WhatsApp compatível com PHPUnit 12 (arity do método). Referencias: `tests/Unit/Domain/Whatsapp/WhatsappNotificationGateServiceTest.php`.
+- Regressão L13/PHPUnit 12: `ImportarAdmissoesCommand` valida arquivo antes de consultar `users`; `UpdateVagaRequest` aceita id escalar na rota; soft deletes condicionais na migração de padrões de treinamento; testes de e-mail/assistente/testemunhal/XSS alinhados. Referencias: `app/Console/Commands/ImportarAdmissoesCommand.php`, `app/Http/Requests/Cadastros/UpdateVagaRequest.php`, `app/Services/Treinamento/MigrarSegmentosParaPadroesTreinamento.php`, `tests/`.
 
 ## [2.2.0] - 2026-11-26
 

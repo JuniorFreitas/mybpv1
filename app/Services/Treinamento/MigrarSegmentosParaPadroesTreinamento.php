@@ -222,11 +222,11 @@ class MigrarSegmentosParaPadroesTreinamento
         }
 
         // Admissões: todas sem padrao (com ou sem segmento) → padrão correspondente
-        $admissoes = DB::table('admissoes as a')
+        $admissoesQuery = DB::table('admissoes as a')
             ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
-            ->whereNull('a.padrao_treinamento_id')
-            ->whereNull('a.deleted_at')
-            ->whereNull('f.deleted_at')
+            ->whereNull('a.padrao_treinamento_id');
+        $this->aplicarSoftDeletesAdmissaoFeedback($admissoesQuery);
+        $admissoes = $admissoesQuery
             ->select(['a.id', 'f.empresa_id', 'a.segmento_treinamento_id'])
             ->get();
 
@@ -302,13 +302,10 @@ class MigrarSegmentosParaPadroesTreinamento
             DB::table('vencimentos')->whereNotNull('segmento_treinamento_id')->whereNotNull('empresa_id')->pluck('empresa_id')
         );
 
-        $ids = $ids->merge(
-            DB::table('admissoes as a')
-                ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
-                ->whereNull('a.deleted_at')
-                ->whereNull('f.deleted_at')
-                ->pluck('f.empresa_id')
-        );
+        $admissaoEmpresas = DB::table('admissoes as a')
+            ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id');
+        $this->aplicarSoftDeletesAdmissaoFeedback($admissaoEmpresas);
+        $ids = $ids->merge($admissaoEmpresas->pluck('f.empresa_id'));
 
         // Se ninguém tem pivot, ainda assim cria padrão ALUMAR para empresas com vencimentos
         if ($ids->isEmpty()) {
@@ -335,13 +332,12 @@ class MigrarSegmentosParaPadroesTreinamento
             ->where('segmento_treinamento_id', $segmentoId)
             ->exists();
 
-        $usaEmAdmissao = DB::table('admissoes as a')
+        $usaEmAdmissaoQuery = DB::table('admissoes as a')
             ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
             ->where('f.empresa_id', $empresaId)
-            ->where('a.segmento_treinamento_id', $segmentoId)
-            ->whereNull('a.deleted_at')
-            ->whereNull('f.deleted_at')
-            ->exists();
+            ->where('a.segmento_treinamento_id', $segmentoId);
+        $this->aplicarSoftDeletesAdmissaoFeedback($usaEmAdmissaoQuery);
+        $usaEmAdmissao = $usaEmAdmissaoQuery->exists();
 
         if ($usaEmVencimento || $usaEmAdmissao) {
             return true;
@@ -350,16 +346,29 @@ class MigrarSegmentosParaPadroesTreinamento
         // Sem pivot e sem uso explícito: só cria o padrão default (alumar) se a empresa tem qualquer vencimento
         $slug = DB::table('segmentos_treinamento')->where('id', $segmentoId)->value('slug');
         if ($slug === 'alumar') {
+            $temAdmissaoEmpresa = DB::table('admissoes as a')
+                ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
+                ->where('f.empresa_id', $empresaId);
+            $this->aplicarSoftDeletesAdmissaoFeedback($temAdmissaoEmpresa);
+
             return DB::table('vencimentos')->where('empresa_id', $empresaId)->exists()
-                || DB::table('admissoes as a')
-                    ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
-                    ->where('f.empresa_id', $empresaId)
-                    ->whereNull('a.deleted_at')
-                    ->whereNull('f.deleted_at')
-                    ->exists();
+                || $temAdmissaoEmpresa->exists();
         }
 
         return false;
+    }
+
+    /**
+     * Soft delete só quando a coluna existe (schemas de teste mínimos / bases legadas).
+     */
+    private function aplicarSoftDeletesAdmissaoFeedback($query): void
+    {
+        if (Schema::hasColumn('admissoes', 'deleted_at')) {
+            $query->whereNull('a.deleted_at');
+        }
+        if (Schema::hasColumn('feedback_curriculos', 'deleted_at')) {
+            $query->whereNull('f.deleted_at');
+        }
     }
 
     private function slugUnicoGlobal(string $table, string $slugBase): string

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Testemunhal;
+use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -22,6 +23,12 @@ class TestemunhalTextoXssTest extends TestCase
         config(['activitylog.enabled' => false]);
         $this->garantirTabelas();
         $this->withoutMiddleware();
+        $this->actingAs(new User([
+            'nome' => 'Usuário Teste',
+            'tipo' => 'ADMINISTRADOR',
+            'ativo' => true,
+            'empresa_id' => 123,
+        ]));
     }
 
     public function test_seguranca_payload_xss_no_texto_nao_preserva_atributos_perigosos(): void
