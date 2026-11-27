@@ -442,6 +442,20 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         });
     });
 
+    // Configurações › Notificações (grupos de destinatários)
+    Route::group(['as' => 'configuracoes.notificacoes.', 'prefix' => 'configuracoes/notificacoes', 'middleware' => 'can:configuracao_notificacoes'], function () {
+        Route::get('/', [\App\Http\Controllers\NotificacaoConfigController::class, 'index'])->name('index');
+        Route::get('/tipos', [\App\Http\Controllers\NotificacaoConfigController::class, 'tipos'])->name('tipos');
+        Route::get('/grupos', [\App\Http\Controllers\NotificacaoConfigController::class, 'listarGrupos'])->name('grupos.index');
+        Route::post('/grupos', [\App\Http\Controllers\NotificacaoConfigController::class, 'store'])->name('grupos.store');
+        Route::get('/grupos/{id}', [\App\Http\Controllers\NotificacaoConfigController::class, 'show'])->name('grupos.show')->whereNumber('id');
+        Route::put('/grupos/{id}', [\App\Http\Controllers\NotificacaoConfigController::class, 'update'])->name('grupos.update')->whereNumber('id');
+        Route::put('/grupos/{id}/ativa-desativa', [\App\Http\Controllers\NotificacaoConfigController::class, 'ativaDesativa'])->name('grupos.ativa-desativa')->whereNumber('id');
+        Route::delete('/grupos/{id}', [\App\Http\Controllers\NotificacaoConfigController::class, 'destroy'])->name('grupos.destroy')->whereNumber('id');
+        Route::get('/candidatos', [\App\Http\Controllers\NotificacaoConfigController::class, 'candidatos'])->name('candidatos');
+        Route::get('/centros-custo', [\App\Http\Controllers\NotificacaoConfigController::class, 'centrosCusto'])->name('centros-custo');
+    });
+
     // Configurações WhatsApp por empresa
     Route::group(['as' => 'configuracoes.whatsapp.', 'prefix' => 'configuracoes/whatsapp'], function () {
         Route::get('/', [\App\Http\Controllers\WhatsappConfigController::class, 'index'])->name('index');

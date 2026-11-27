@@ -104,7 +104,8 @@ class FeriasPrevistaEditPayloadMapperTest extends TestCase
         $payload = (new FeriasPrevistaEditPayloadMapper())->map($item);
 
         $this->assertSame(7, $payload['id']);
-        $this->assertSame(10, $payload['colaborador_id']);
+        // colaborador_id no fluxo de férias é feedback_curriculos.id (não curriculo/users.id)
+        $this->assertSame(11, $payload['colaborador_id']);
         $this->assertSame('ANA SILVA', $payload['autocomplete_label_colaborador']);
         $this->assertSame('Carlos Gestor', $payload['autocomplete_label_gestor_modal']);
         $this->assertSame(5, $payload['centro_custo_id']);

@@ -10,7 +10,7 @@ class UserRHCacheObserver
     /**
      * Atributos que quando alterados invalidam o cache de RH
      */
-    private const ATRIBUTOS_MONITORADOS = ['ativo', 'login', 'nome', 'tipo'];
+    private const ATRIBUTOS_MONITORADOS = ['ativo', 'login', 'nome', 'tipo', 'grupo_id'];
 
     /**
      * Handle the User "updated" event.
@@ -69,8 +69,8 @@ class UserRHCacheObserver
      */
     private function deveInvalidarCache(User $user): bool
     {
-        // Se mudou 'ativo' ou 'tipo', sempre invalida (pode ter perdido privilégio RH)
-        if ($user->isDirty('ativo') || $user->isDirty('tipo')) {
+        // Se mudou 'ativo', 'tipo' ou 'grupo_id', sempre invalida (pode ter perdido privilégio RH)
+        if ($user->isDirty('ativo') || $user->isDirty('tipo') || $user->isDirty('grupo_id')) {
             return true;
         }
 

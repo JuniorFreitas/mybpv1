@@ -95,10 +95,22 @@ return [
     |
     | Quando APP_ENV=local, Mail::alwaysTo() força todos os envios para este
     | endereço (útil para testar SES sem atingir usuários reais).
+    | NÃO aplica quando MAIL_HOST é Mailpit (ver local_mailpit_hosts), para
+    | preservar To/Cc/Bcc em http://localhost:8025.
     |
     */
 
     'local_redirect_to' => env('MAIL_LOCAL_REDIRECT_TO') ?: env('MAIL_LOCAL_ADDRESS') ?: 'josedejesusjunior@gmail.com',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hosts SMTP locais (Mailpit) — preserva To/Cc/Bcc
+    |--------------------------------------------------------------------------
+    */
+    'local_mailpit_hosts' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('MAIL_LOCAL_MAILPIT_HOSTS', 'host.docker.internal,127.0.0.1,localhost,mailpit'))
+    ))),
 
     /*
     |--------------------------------------------------------------------------

@@ -136,7 +136,11 @@ class JobNotificacaoRecursiva implements ShouldQueue
      */
     private function buscarEmailsRH(): array
     {
-        return RHHelper::buscarEmailsRH($this->admissao->empresa_id);
+        $ccId = (int) ($this->admissao->centro_custo_id ?: 0);
+
+        return RHHelper::buscarEmailsRH((int) $this->admissao->empresa_id, array_filter([
+            'centro_custo_id' => $ccId > 0 ? $ccId : null,
+        ], fn ($v) => $v !== null));
     }
 
     /**

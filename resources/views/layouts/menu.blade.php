@@ -1037,7 +1037,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('configuracao_habilidades','configuracao_papel'))
+    @if(\App\Models\Sistema::permitirLinks('configuracao_habilidades','configuracao_papel','configuracao_notificacoes'))
         <li id="config">
             <a href="javascript://" class="has-arrow waves-effect" parent="config">
                 <i class="fa fa-cogs" style="font-size: 16px;"></i>
@@ -1055,6 +1055,13 @@
                     <li>
                         <a href="{{route('g.configuracoes.papeis.index')}}" parent="config" key="grupo-usuarios">
                             Grupos de Usuários
+                        </a>
+                    </li>
+                @endcan
+                @can('configuracao_notificacoes')
+                    <li>
+                        <a href="{{route('g.configuracoes.notificacoes.index')}}" parent="config" key="notificacoes">
+                            Notificações
                         </a>
                     </li>
                 @endcan

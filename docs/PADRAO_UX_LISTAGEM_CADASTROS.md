@@ -144,7 +144,7 @@ Ver bloco `cnpjComboboxOpcoesFiltro` acima (primeira opção `Todos os CNPJs`).
                 <div class="mybp-card-titulo"><strong>{{ item.label }}</strong></div>
             </div>
             <div class="mybp-card-right">
-                <!-- status, dropdown ações -->
+                <!-- bt-ativo + dropdown ações -->
             </div>
         </div>
         <div class="mybp-card-details-row">
@@ -160,14 +160,25 @@ Ver bloco `cnpjComboboxOpcoesFiltro` acima (primeira opção `Todos os CNPJs`).
 
 Blocos destacados (ex.: gestores): `mybp-card-destaque` + modificadores `--primary` / `--info`.
 
+### Cabeçalho com metas (nome + tipo/escopo)
+
+Quando o card precisa de **nome + metadados rotulados + status**, usar `mybp-card-cabecalho` (ref. Configurações › Notificações):
+
+1. `#id` + **nome** + `bt-ativo` (não badge estático)
+2. Pills `mybp-card-meta` com `label` + `valor` (ex.: Tipo / Abrange)
+3. Conteúdo abaixo (destinatários, detalhes…)
+
+Status: rota `PUT …/{id}/ativa-desativa` + componente global `bt-ativo`, com `@click.stop` se o card inteiro for clicável.
+
 ## Classes CSS (`mybp-*`)
 
 Prefixo **`mybp-`** evita conflito com estilos locais. Principais:
 
 - Filtros: `mybp-label`, `mybp-filtros-form`, `mybp-filtros-botoes`, `mybp-combobox-wrap`
 - Cards: `mybp-cards-lista`, `mybp-card`, `mybp-card-header-row`, `mybp-badge-id`
+- Cabeçalho com metas: `mybp-card-cabecalho`, `mybp-card-cabecalho__topo`, `mybp-card-cabecalho__metas`, `mybp-card-meta`
 - Detalhes: `mybp-detail-item`, `mybp-detail-label`, `mybp-detail-value`
-- Ações: `mybp-btn-acoes-compact`, `mybp-dropdown-menu`
+- Ações: `mybp-btn-acoes-compact`, `mybp-dropdown-menu`, `bt-ativo`
 
 Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"`.
 

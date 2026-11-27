@@ -1,0 +1,42 @@
+// Decisão Aprovar/Reprovar no modal operacional
+// Uso: MybpAprovacaoDecisao.vue + rodapé com btn Reprovar / Aprovar
+
+.mybp-aprovacao-decisao--ativa {
+    border-left: 3px solid #174257;
+    padding-left: 0.75rem;
+    margin-left: -0.75rem;
+}
+
+.mybp-aprovacao-decisao__hint {
+    font-size: 0.8125rem;
+    color: #5a6a72;
+}
+
+.mybp-aprovacao-decisao__resumo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.mybp-aprovacao-decisao__meta {
+    font-size: 0.8125rem;
+    color: #6c757d;
+}
+
+.mybp-aprovacao-decisao__obs {
+    font-size: 0.8125rem;
+    color: #495057;
+    white-space: pre-wrap;
+}
+
+.mybp-aprovacao-acoes {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.mybp-aprovacao-acoes .btn {
+    min-width: 7.5rem;
+}

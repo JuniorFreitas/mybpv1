@@ -7,6 +7,29 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-26
+
+### Adicionado
+
+- Central Configurações › Notificações: grupos por tipo/escopo, destinatários, soft delete, liberação por empresa e habilidade `configuracao_notificacoes`. Referencias: `app/Http/Controllers/NotificacaoConfigController.php`, `app/Services/Notificacao/`, `resources/js/components/configuracoes/notificacoes/NotificacoesConfig.vue`, `database/migrations/2026_11_26_201242_create_notificacao_central_tables.php`, PR #69.
+- Motor `NotificacaoEngine` / `NotificacaoDestinatarioResolver` integrado ao `RHHelper` e aos jobs de e-mail de movimentação/requisição de vaga. Referencias: `app/Services/Notificacao/NotificacaoEngine.php`, `app/Helpers/RHHelper.php`, `app/Jobs/Concerns/EnviaMailComBcc.php`.
+- Comando `mybp:notificacoes-liberar` para liberar a tela e criar/atualizar o grupo RH da empresa. Referencias: `app/Console/Commands/LiberarNotificacoesEmpresaCommand.php`, `app/Services/Notificacao/LiberarNotificacaoEmpresaService.php`.
+- Componente `MybpAprovacaoDecisao` para decisão Aprovar/Reprovar no modal de movimentação. Referencias: `resources/js/components/ui/MybpAprovacaoDecisao.vue`, `resources/sass/_mybp-aprovacao-decisao.scss`.
+- `LocalMailRedirect` para preservar To/Cc/Bcc no Mailpit em ambiente local. Referencias: `app/Support/Mail/LocalMailRedirect.php`, `config/mail.php`.
+
+### Modificado
+
+- `laravel/framework` atualizado de `v12.73.0` para `v12.74.0`. Referencias: `composer.lock`, PR #69.
+- Modais de aprovação de Admissão, Demissão, Férias, Valor Extra, Mudança de Cargo, Intermitente→Fixo e Transferência alinhados ao padrão Aprovar/Reprovar (sem combobox de status). Referencias: `resources/js/components/planejamento/movimentacao/Solicitacao*.vue`, PR #69.
+- Jobs de notificação de movimentação passam a enviar 1º destinatário em To e demais em BCC. Referencias: `app/Jobs/Concerns/EnviaMailComBcc.php`, `app/Jobs/Movimentacao/*/JobNotificacaoRecursiva.php`.
+- E-mail de aprovação de mudança de cargo exibe apenas alterações relevantes. Referencias: `resources/views/.../mudanca_cargo/notificacao-aprovacao.blade.php`.
+- Mapeamento de edição de férias com `colaborador_id` alinhado ao fluxo de feedback. Referencias: `app/Services/Ferias/FeriasPrevistaEditPayloadMapper.php`, `app/Http/Controllers/FeriasPrevistaController.php`.
+- UX de listagem/modal (cabeçalho de card, filtros, tooltip no combobox) e documentação do padrão cardlist. Referencias: `resources/sass/_mybp-listagem-ui.scss`, `resources/sass/_mybp-modal-form.scss`, `docs/PADRAO_UX_LISTAGEM_CADASTROS.md`, `.cursor/skills/mybp-front-cardlist/SKILL.md`.
+
+### Corrigido
+
+- Em local com Mailpit (`host.docker.internal`), `Mail::alwaysTo` não mascara mais To/BCC reais. Referencias: `app/Support/Mail/LocalMailRedirect.php`, `app/Providers/AppServiceProvider.php`.
+
 ## [2.1.0] - 2026-11-25
 
 ### Adicionado

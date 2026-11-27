@@ -2,112 +2,100 @@
 
 namespace App\Helpers;
 
+use App\Models\NotificacaoTipo;
 use App\Models\User;
+use App\Services\Notificacao\NotificacaoEngine;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class RHHelper
 {
-    /** Cache TTL: 24 horas (86400 segundos) */
-    private const CACHE_TTL = 86400;
+    /** Cache TTL candidatos RH (tela/config): 15 minutos */
+    private const CACHE_TTL_CANDIDATOS = 900;
 
     /**
-     * Busca todos os usuários RH ativos da empresa com CACHE de 24h
-     * (com privilegio_gestao_rh OU privilegio_aprovar_por_rh OU privilegio_aprovar_rh)
+     * Usuários com privilégio RH (para UI de configuração / checagens).
+     * Não define mais quem recebe e-mail de aprovação — isso vem dos grupos.
      *
-     * ✅ SELECT otimizado: apenas id, nome, login, empresa_id
-     * ✅ Cache invalidado automaticamente via UserObserver
-     *
-     * @param int $empresaId
-     * @return Collection
+     * @return Collection<int, User>
      */
     public static function buscarUsuariosRH(int $empresaId): Collection
     {
-        $cacheKey = self::getCacheKey($empresaId);
-        Log::info("RHHelper@buscarUsuariosRH - Buscando usuários RH para empresa ID: {$empresaId} - Cache Key: {$cacheKey}");
+        $cacheKey = self::getCacheKeyCandidatos($empresaId);
+
+        $loader = function () use ($empresaId) {
+            return User::withoutGlobalScopes()
+                ->select('users.id', 'users.nome', 'users.login', 'users.empresa_id', 'users.ativo', 'users.tipo')
+                ->join('papeis', 'users.grupo_id', '=', 'papeis.id')
+                ->join('papeis_habilidades', 'papeis.id', '=', 'papeis_habilidades.papel_id')
+                ->join('habilidades', 'papeis_habilidades.habilidade_id', '=', 'habilidades.id')
+                ->where('users.empresa_id', $empresaId)
+                ->where('users.ativo', true)
+                ->whereNull('users.deleted_at')
+                ->where('users.tipo', '!=', 'Empresa')
+                ->whereIn('habilidades.nome', ['privilegio_gestao_rh', 'privilegio_aprovar_por_rh', 'privilegio_aprovar_rh'])
+                ->distinct()
+                ->get();
+        };
+
+        if (!method_exists(Cache::getStore(), 'tags')) {
+            return $loader();
+        }
 
         return Cache::tags(['rh_usuarios', "empresa_{$empresaId}"])->remember(
             $cacheKey,
-            self::CACHE_TTL,
-            function () use ($empresaId) {
-                $usuarios = User::withoutGlobalScopes()
-                    ->select('users.id', 'users.nome', 'users.login', 'users.empresa_id', 'users.ativo', 'users.tipo')
-                    ->join('papeis', 'users.grupo_id', '=', 'papeis.id')
-                    ->join('papeis_habilidades', 'papeis.id', '=', 'papeis_habilidades.papel_id')
-                    ->join('habilidades', 'papeis_habilidades.habilidade_id', '=', 'habilidades.id')
-                    ->where('users.empresa_id', $empresaId)
-                    ->where('users.ativo', true)
-                    ->where('users.tipo', '!=', 'Empresa')
-                    ->whereIn('habilidades.nome', ['privilegio_gestao_rh', 'privilegio_aprovar_por_rh', 'privilegio_aprovar_rh'])
-                    ->distinct()
-                    ->get();
-
-                Log::info("RHHelper@buscarUsuariosRH - Encontrados {$usuarios->count()} usuários RH", [
-                    'usuarios' => $usuarios->pluck('login')->toArray()
-                ]);
-
-                return $usuarios;
-            }
+            self::CACHE_TTL_CANDIDATOS,
+            $loader
         );
     }
-    /**
-     * Busca apenas os emails dos usuários RH ativos da empresa (CACHE)
-     *
-     * @param int $empresaId
-     * @return array
-     */
-    public static function buscarEmailsRH(int $empresaId): array
-    {
-        return self::buscarUsuariosRH($empresaId)
-            ->pluck('login')
-            ->filter()
-            ->values()
-            ->toArray();
-    }
 
     /**
-     * Verifica se o usuário tem privilégio de RH
+     * E-mails RH para notificação de aprovação.
+     * Fonte: grupos cadastrados em Configurações › Notificações (tipo aprovacao_rh).
+     * Sem grupo compatível = [].
      *
-     * @param User $user
-     * @return bool
+     * @param  array{centro_custo_id?: int|null, matriz?: bool|null}  $contexto
+     * @return list<string>
      */
+    public static function buscarEmailsRH(int $empresaId, array $contexto = []): array
+    {
+        return app(NotificacaoEngine::class)->emailsAprovacaoRh($empresaId, $contexto);
+    }
+
     public static function ehUsuarioRH(User $user): bool
     {
-        return $user->can('privilegio_gestao_rh') || $user->can('privilegio_aprovar_por_rh') || $user->can('privilegio_aprovar_rh');
+        return $user->can('privilegio_gestao_rh')
+            || $user->can('privilegio_aprovar_por_rh')
+            || $user->can('privilegio_aprovar_rh');
     }
 
-    /**
-     * Invalida cache de usuários RH de uma empresa específica
-     * Chamado automaticamente pelo UserObserver
-     *
-     * @param int $empresaId
-     * @return void
-     */
     public static function invalidarCache(int $empresaId): void
     {
-        Cache::tags(["empresa_{$empresaId}"])->flush();
+        if (method_exists(Cache::getStore(), 'tags')) {
+            Cache::tags(["empresa_{$empresaId}"])->flush();
+        }
+        app(NotificacaoEngine::class)->invalidarEmpresa($empresaId);
     }
 
-    /**
-     * Invalida cache de todas as empresas
-     * Usar apenas em situações excepcionais
-     *
-     * @return void
-     */
     public static function invalidarTodoCache(): void
     {
-        Cache::tags(['rh_usuarios'])->flush();
+        if (method_exists(Cache::getStore(), 'tags')) {
+            Cache::tags(['rh_usuarios'])->flush();
+            Cache::tags(['notificacao_destinatarios'])->flush();
+        }
     }
 
     /**
-     * Gera chave de cache única por empresa
-     *
-     * @param int $empresaId
-     * @return string
+     * @return list<int>
      */
-    private static function getCacheKey(int $empresaId): string
+    public static function idsUsuariosRhEmpresa(int $empresaId): array
     {
-        return "rh_usuarios_empresa_{$empresaId}";
+        return self::buscarUsuariosRH($empresaId)->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    private static function getCacheKeyCandidatos(int $empresaId): string
+    {
+        return 'rh_candidatos_empresa_' . $empresaId . '_' . NotificacaoTipo::APROVACAO_RH;
     }
 }

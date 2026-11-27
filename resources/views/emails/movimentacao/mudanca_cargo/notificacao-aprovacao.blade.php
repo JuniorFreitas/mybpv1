@@ -18,6 +18,12 @@ $rh = $dados['rh'];
 $nome_aprovacao_extra = $dados['nome_aprovacao_extra'];
 $url = $dados['url'];
 $has_aprovacao_extra = $dados['has_aprovacao_extra'] ?? false;
+$alteracoes = $dados['alteracoes'] ?? [
+    'centro_custo' => !(bool) ($mudanca->mantem_centro_custo ?? true),
+    'cargo' => !(bool) ($mudanca->mantem_cargo ?? true),
+    'funcao' => !(bool) ($mudanca->mantem_funcao ?? true),
+    'salario' => !(bool) ($mudanca->mantem_salario ?? true),
+];
 
 /** Datas de MudancaCargo vêm como d/m/Y (acessors DataHora); Carbon::parse() não interpreta esse formato. */
 $formatarDataMudancaEmail = static function ($valor): string {
@@ -164,6 +170,7 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td width="40%" style="color: #555;"><strong>CÓD:</strong></td>
                         <td>#{{ $mudanca->id }}</td>
                     </tr>
+                    @if(!empty($alteracoes['centro_custo']))
                     <tr>
                         <td style="color: #555;"><strong>Centro de Custo Anterior:</strong></td>
                         <td>{{ $centro_custo_anterior }}</td>
@@ -172,6 +179,8 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td style="color: #555;"><strong>Centro de Custo Novo:</strong></td>
                         <td>{{ $centro_custo_novo }}</td>
                     </tr>
+                    @endif
+                    @if(!empty($alteracoes['cargo']))
                     <tr>
                         <td style="color: #555;"><strong>Cargo Anterior:</strong></td>
                         <td>{{ $cargo_anterior }}</td>
@@ -180,25 +189,22 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td style="color: #555;"><strong>Novo Cargo:</strong></td>
                         <td>{{ $cargo_novo }}</td>
                     </tr>
-                    @if($funcao_anterior)
+                    @endif
+                    @if(!empty($alteracoes['funcao']))
                     <tr>
                         <td style="color: #555;"><strong>Função Anterior:</strong></td>
-                        <td>{{ $funcao_anterior }}</td>
+                        <td>{{ $funcao_anterior !== '' ? $funcao_anterior : 'Não informado' }}</td>
                     </tr>
-                    @endif
-                    @if($funcao_nova)
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Nova Função:</strong></td>
-                        <td>{{ $funcao_nova }}</td>
+                        <td>{{ $funcao_nova !== '' ? $funcao_nova : 'Não informado' }}</td>
                     </tr>
                     @endif
-                    @if($mudanca->anterior_salario)
+                    @if(!empty($alteracoes['salario']))
                     <tr>
                         <td style="color: #555;"><strong>Salário Anterior:</strong></td>
                         <td>{{ $mudanca->anterior_salario }}</td>
                     </tr>
-                    @endif
-                    @if($mudanca->novo_salario)
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Novo Salário:</strong></td>
                         <td>{{ $mudanca->novo_salario }}</td>

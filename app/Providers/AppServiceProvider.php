@@ -51,7 +51,10 @@ class AppServiceProvider extends ServiceProvider
             \URL::forceScheme('https');
         }
 
-        if ($this->app->environment('local')) {
+        if (\App\Support\Mail\LocalMailRedirect::shouldForceAlwaysTo(
+            $this->app->environment(),
+            \App\Support\Mail\LocalMailRedirect::smtpHost()
+        )) {
             $redirectTo = config('mail.local_redirect_to');
             if (is_string($redirectTo)) {
                 $redirectTo = trim($redirectTo);
