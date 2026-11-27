@@ -59,7 +59,17 @@
                 <preload v-if="mapLoading" label="Carregando mapa..."></preload>
             </p>
             <div v-show="!formPonto.preload && !formPonto.save">
-                <div id="mapaPrimetro" class="mapa-container" v-show="formPonto.telaGPS"></div>
+                <div v-show="formPonto.telaGPS" class="mb-2">
+                    <div
+                        v-if="geoStatusMessage"
+                        class="alert py-2 mb-2"
+                        :class="geoStatusAlertClass"
+                        role="status"
+                    >
+                        @{{ geoStatusMessage }}
+                    </div>
+                    <div id="mapaPrimetro" class="mapa-container"></div>
+                </div>
                 <div v-show="formPonto.telaCamera">
                     <div class="row">
                         <div class="col"></div>
@@ -80,7 +90,14 @@
             </div>
         </template>
         <template #rodape>
-            <button :disabled="!formPonto.dentro"
+            <button v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
+                    class="btn btn-sm mr-1 btn-outline-secondary"
+                    type="button"
+                    @click="atualizarLocalizacao"
+                    :disabled="geoStatus === 'seeking'">
+                <i class="fas fa-sync-alt"></i> Atualizar localização
+            </button>
+            <button :disabled="!podeContinuar"
                     v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
                     class="btn btn-sm mr-1 btn-success"
                     type="button"

@@ -29,7 +29,9 @@ const app = createApp({
                 telaCamera: false,
                 preload: false,
                 foto: null,
-                save: false
+                save: false,
+                accuracy: null,
+                distanciaPerimetro: null
             },
             formPontoDefault: null,
             registros: [],
@@ -54,11 +56,18 @@ const app = createApp({
             // Mapa e localização
             map: null,
             marker: null,
+            accuracyCircle: null,
             userLocation: null,
-            locationTimer: null,
+            watchId: null,
+            geoStatus: 'idle', // idle | seeking | ready | poor | error
+            geoErrorMessage: '',
             webCam: null,
             agora: moment(),
-            hoje: ''
+            hoje: '',
+
+            // Limites de precisão GPS (metros)
+            ACCURACY_MAX_USABLE: 500,
+            ACCURACY_BUFFER_CAP: 80
         }
     },
     mounted() {
@@ -75,6 +84,49 @@ const app = createApp({
         },
         perimetroUsuario() {
             return this.listaPerimetros ? this.listaPerimetros[0] : null
+        },
+        podeContinuar() {
+            return !!this.formPonto.dentro && this.geoStatus === 'ready'
+        },
+        geoStatusAlertClass() {
+            if (this.geoStatus === 'error') return 'alert-danger'
+            if (this.geoStatus === 'poor') return 'alert-warning'
+            if (this.geoStatus === 'ready' && this.formPonto.dentro) return 'alert-success'
+            if (this.geoStatus === 'ready' && !this.formPonto.dentro) return 'alert-warning'
+            return 'alert-info'
+        },
+        geoStatusMessage() {
+            if (this.geoStatus === 'error') {
+                return this.geoErrorMessage || 'Não foi possível obter a localização.'
+            }
+            if (this.geoStatus === 'seeking') {
+                return 'Obtendo GPS… mantenha a tela aberta e a localização precisa ligada (pode levar até 30s).'
+            }
+            if (this.geoStatus === 'poor') {
+                const acc = this.formPonto.accuracy != null ? Math.round(this.formPonto.accuracy) : '?'
+                return `Sinal impreciso (${acc} m). Aguarde um GPS melhor ou vá para área aberta e toque em Atualizar localização.`
+            }
+            if (this.geoStatus === 'ready') {
+                const acc = this.formPonto.accuracy != null ? Math.round(this.formPonto.accuracy) : null
+                const precisao =
+                    acc != null
+                        ? `Precisão atual: ${acc} m${acc > 50 ? ' (ainda um pouco imprecisa)' : ''}.`
+                        : 'Localização obtida.'
+                if (!this.formPonto.obrigatorio) {
+                    return precisao
+                }
+                if (this.formPonto.dentro) {
+                    return `${precisao} Você está dentro do perímetro permitido.`
+                }
+                const dist =
+                    this.formPonto.distanciaPerimetro != null
+                        ? Math.round(this.formPonto.distanciaPerimetro)
+                        : null
+                return dist != null
+                    ? `${precisao} Fora do perímetro (a ${dist} m do local permitido).`
+                    : `${precisao} Fora do perímetro permitido.`
+            }
+            return ''
         }
     },
     methods: {
@@ -105,22 +157,25 @@ const app = createApp({
             }
         },
 
-        // Função auxiliar para encapsular a geolocalização em uma Promise
-        getPosition(options = {}) {
-            return new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, options)
-            })
+        geoOptions() {
+            return {
+                enableHighAccuracy: true,
+                timeout: 30000,
+                maximumAge: 0
+            }
         },
 
         // Inicialização do mapa Leaflet
         async initMap() {
             this.mapLoading = true
+            this.clearWatch()
 
             // Limpar mapa anterior se existir
             if (this.map) {
                 this.map.remove()
                 this.map = null
                 this.marker = null
+                this.accuracyCircle = null
             }
 
             // Inicializar mapa após o DOM estar pronto
@@ -149,10 +204,12 @@ const app = createApp({
                 this.adicionarPerimetros()
 
                 // Iniciar rastreamento de localização
-                await this.iniciarRastreamento()
+                this.iniciarRastreamento()
             } catch (e) {
                 console.error('Erro ao inicializar mapa:', e)
                 this.mapLoading = false
+                this.geoStatus = 'error'
+                this.geoErrorMessage = 'Não foi possível carregar o mapa.'
             }
         },
 
@@ -177,51 +234,78 @@ const app = createApp({
             })
         },
 
-        // Iniciar rastreamento de localização do usuário
-        async iniciarRastreamento() {
-            // Opções para a API de geolocalização
-            const geoOptions = {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
+        // Iniciar rastreamento contínuo via watchPosition (melhor para GPS mobile)
+        iniciarRastreamento() {
+            if (!navigator.geolocation) {
+                this.geoStatus = 'error'
+                this.geoErrorMessage = 'Seu navegador não suporta geolocalização.'
+                this.formPonto.dentro = !this.formPonto.obrigatorio
+                return
             }
 
-            try {
-                // Obter posição inicial
-                const posicao = await this.getPosition(geoOptions)
-                this.atualizarPosicao(posicao)
-            } catch (erro) {
-                this.handleGeoError(erro)
+            if (!window.isSecureContext) {
+                this.geoStatus = 'error'
+                this.geoErrorMessage = 'A localização só funciona em conexão segura (HTTPS).'
+                this.formPonto.dentro = false
+                return
             }
 
-            // Configurar atualização contínua da posição
-            this.locationTimer = setInterval(async () => {
-                if (this.formPonto.telaGPS && this.map) {
-                    try {
-                        const posicao = await this.getPosition(geoOptions)
-                        this.atualizarPosicao(posicao)
-                    } catch (erro) {
-                        this.handleGeoError(erro)
-                    }
-                }
-            }, 5000)
+            this.clearWatch()
+            this.geoStatus = 'seeking'
+            this.geoErrorMessage = ''
+            this.formPonto.accuracy = null
+            this.formPonto.distanciaPerimetro = null
+            if (this.formPonto.obrigatorio) {
+                this.formPonto.dentro = false
+            }
+
+            this.watchId = navigator.geolocation.watchPosition(
+                (posicao) => this.atualizarPosicao(posicao),
+                (erro) => this.handleGeoError(erro),
+                this.geoOptions()
+            )
+        },
+
+        // Reinicia o watch (útil após liberar permissão / Localização Precisa no iOS)
+        atualizarLocalizacao() {
+            this.iniciarRastreamento()
+        },
+
+        clearWatch() {
+            if (this.watchId != null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(this.watchId)
+                this.watchId = null
+            }
         },
 
         // Atualizar a posição do usuário
         atualizarPosicao(posicao) {
-            if (!this.map) return
+            if (!this.map || !this.formPonto.telaGPS) return
 
             const coords = posicao.coords
+            const accuracy = typeof coords.accuracy === 'number' ? coords.accuracy : null
+
+            // Ignorar leituras muito ruins até chegar um fix melhor
+            if (accuracy != null && accuracy > this.ACCURACY_MAX_USABLE) {
+                this.formPonto.accuracy = accuracy
+                this.geoStatus = 'poor'
+                this.formPonto.dentro = false
+                return
+            }
+
             const latLng = [coords.latitude, coords.longitude]
 
-            // Armazenar posição atual
             this.userLocation = {
                 lat: coords.latitude,
-                lng: coords.longitude
+                lng: coords.longitude,
+                accuracy
             }
 
             this.formPonto.lat = coords.latitude
             this.formPonto.long = coords.longitude
+            this.formPonto.accuracy = accuracy
+            this.geoStatus = 'ready'
+            this.geoErrorMessage = ''
 
             // Centralizar mapa na posição
             this.map.setView(latLng, this.map.getZoom() || 16)
@@ -235,15 +319,45 @@ const app = createApp({
                 this.marker.setLatLng(latLng)
             }
 
+            // Círculo de precisão do GPS
+            if (accuracy != null && accuracy > 0) {
+                if (!this.accuracyCircle) {
+                    this.accuracyCircle = L.circle(latLng, {
+                        color: '#3388ff',
+                        weight: 1,
+                        fillColor: '#3388ff',
+                        fillOpacity: 0.15,
+                        radius: accuracy
+                    }).addTo(this.map)
+                } else {
+                    this.accuracyCircle.setLatLng(latLng)
+                    this.accuracyCircle.setRadius(accuracy)
+                }
+            }
+
             // Verificar se está dentro de algum perímetro
-            this.verificarPerimetros(latLng)
+            this.verificarPerimetros(latLng, accuracy)
         },
 
         // Tratar erro de geolocalização
         handleGeoError(erro) {
-            console.error('Erro ao obter localização: ', erro.message)
+            console.error('Erro ao obter localização: ', erro && erro.message)
 
-            // Se não conseguir obter a localização, definir como não estando dentro de nenhum perímetro
+            const code = erro && erro.code
+            if (code === 1) {
+                this.geoErrorMessage =
+                    'Permissão de localização negada. Ative a localização do navegador/celular (Localização Precisa no iOS) e toque em Atualizar localização.'
+            } else if (code === 2) {
+                this.geoErrorMessage =
+                    'GPS indisponível. Verifique se a localização do celular está ligada e tente novamente.'
+            } else if (code === 3) {
+                this.geoErrorMessage =
+                    'Tempo esgotado ao obter o GPS. Vá para área aberta, mantenha a tela aberta e toque em Atualizar localização.'
+            } else {
+                this.geoErrorMessage = (erro && erro.message) || 'Não foi possível obter a localização.'
+            }
+
+            this.geoStatus = 'error'
             if (this.formPonto.obrigatorio) {
                 this.formPonto.dentro = false
             } else {
@@ -251,26 +365,32 @@ const app = createApp({
             }
         },
 
-        // Verificar se o usuário está dentro de algum perímetro
-        verificarPerimetros(posicao) {
+        // Verificar se o usuário está dentro de algum perímetro (com buffer de accuracy)
+        verificarPerimetros(posicao, accuracy) {
             if (!this.formPonto.obrigatorio || !this.listaPerimetros) {
                 this.formPonto.dentro = true
+                this.formPonto.distanciaPerimetro = 0
                 return
             }
 
-            // Começar assumindo que não está dentro de nenhum perímetro
             this.formPonto.dentro = false
+            let menorDistancia = null
+            const buffer =
+                accuracy != null && accuracy > 0
+                    ? Math.min(accuracy, this.ACCURACY_BUFFER_CAP)
+                    : 0
 
             this.listaPerimetros.forEach((perimetro) => {
                 if (!perimetro.lat || !perimetro.long || !perimetro.circulo) return
 
-                // Calcular distância entre usuário e centro do perímetro
                 const distancia = this.calcularDistancia(posicao, [perimetro.lat, perimetro.long])
-
                 const raio = perimetro.perimetro || 50
 
-                // Verificar se está dentro do perímetro
-                if (distancia < raio) {
+                if (menorDistancia == null || distancia < menorDistancia) {
+                    menorDistancia = distancia
+                }
+
+                if (distancia <= raio + buffer) {
                     this.formPonto.dentro = true
                     perimetro.circulo.setStyle({
                         color: '#3f9827',
@@ -283,6 +403,8 @@ const app = createApp({
                     })
                 }
             })
+
+            this.formPonto.distanciaPerimetro = menorDistancia
         },
 
         // Calcular distância entre dois pontos usando fórmula de Haversine
@@ -311,10 +433,10 @@ const app = createApp({
 
         // Parar rastreamento GPS e limpar recursos
         stopGPS() {
-            if (this.locationTimer) {
-                clearInterval(this.locationTimer)
-                this.locationTimer = null
-            }
+            this.clearWatch()
+            this.geoStatus = 'idle'
+            this.geoErrorMessage = ''
+            this.accuracyCircle = null
 
             if (this.map) {
                 this.map.remove()
@@ -362,6 +484,8 @@ const app = createApp({
         // Preparar formulário para novo registro
         async formNovoRegistro() {
             this.formPonto = _.cloneDeep(this.formPontoDefault)
+            this.geoStatus = 'seeking'
+            this.geoErrorMessage = ''
 
             // Inicializar mapa após um breve atraso para garantir que o modal está visível
             await new Promise((resolve) => setTimeout(resolve, 300))
@@ -370,6 +494,9 @@ const app = createApp({
 
         // Continuar para a tela da câmera
         async continuar() {
+            if (!this.podeContinuar) return
+
+            this.clearWatch()
             this.formPonto.telaGPS = false
             this.formPonto.telaCamera = true
 
